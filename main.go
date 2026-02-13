@@ -635,6 +635,7 @@ var reader = bufio.NewReader(os.Stdin)
 
 func runCmd(name string, args ...string) error {
 	cmd := exec.Command(name, args...)
+	cmd.Dir = "/root"
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
@@ -643,12 +644,14 @@ func runCmd(name string, args ...string) error {
 
 func runCmdSilent(name string, args ...string) (string, error) {
 	cmd := exec.Command(name, args...)
+	cmd.Dir = "/root"
 	out, err := cmd.CombinedOutput()
 	return strings.TrimSpace(string(out)), err
 }
 
 func runShell(command string) error {
 	cmd := exec.Command("bash", "-c", command)
+	cmd.Dir = "/root"
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
@@ -657,6 +660,7 @@ func runShell(command string) error {
 
 func runShellSilent(command string) (string, error) {
 	cmd := exec.Command("bash", "-c", command)
+	cmd.Dir = "/root"
 	out, err := cmd.CombinedOutput()
 	return strings.TrimSpace(string(out)), err
 }
