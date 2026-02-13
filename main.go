@@ -193,11 +193,15 @@ func (p *installProgress) advance(stepName string) {
 	pctStr := lipgloss.NewStyle().Foreground(colorAccent).Bold(true).Render(fmt.Sprintf("%3d%%", int(pct*100)))
 
 	stepLabel := lipgloss.NewStyle().Foreground(colorWhite).Bold(true).Render(stepName)
-	counter := dimStyle.Render(fmt.Sprintf("[%d/%d]", p.current, p.total))
+	counter := dimStyle.Render(fmt.Sprintf("[%2d/%d]", p.current, p.total))
 
-	fmt.Printf("\n  %s %s%s %s  %s %s\n", counter, bar, empty, pctStr, accentBar.Render("▸"), stepLabel)
-	fmt.Println(dimStyle.Render("  " + strings.Repeat("─", 60)))
-	fmt.Println()
+	// Очищаем строку и печатаем прогресс на той же позиции
+	fmt.Printf("\r\033[K  %s %s%s %s  %s %s", counter, bar, empty, pctStr, accentBar.Render("▸"), stepLabel)
+	
+	// Переход на новую строку только в конце
+	if p.current == p.total {
+		fmt.Println()
+	}
 }
 
 // ════════════════════════════════════════════════════════════════
