@@ -20,21 +20,10 @@
 curl -fsSL https://raw.githubusercontent.com/wrx861/Bedolaga_insta/main/scripts/quick-install.sh | bash
 ```
 
-Или скачайте бинарник напрямую:
-
-```bash
-# Для Linux AMD64
-curl -fsSL https://raw.githubusercontent.com/wrx861/Bedolaga_insta/main/dist/bedolaga-installer-linux-amd64 -o bedolaga_installer
-chmod +x bedolaga_installer
-./bedolaga_installer
-```
-
-```bash
-# Для Linux ARM64 (Raspberry Pi, Oracle Cloud, etc.)
-curl -fsSL https://raw.githubusercontent.com/wrx861/Bedolaga_insta/main/dist/bedolaga-installer-linux-arm64 -o bedolaga_installer
-chmod +x bedolaga_installer
-./bedolaga_installer
-```
+Скрипт автоматически:
+- Установит Go (если нужно)
+- Скачает и соберёт установщик
+- Запустит мастер установки
 
 ---
 
@@ -80,22 +69,22 @@ chmod +x bedolaga_installer
 
 ### Установка
 ```bash
-./bedolaga_installer install
+bedolaga_installer install
 ```
 
 ### Обновление бота
 ```bash
-./bedolaga_installer update
+bedolaga_installer update
 ```
 
 ### Удаление
 ```bash
-./bedolaga_installer uninstall
+bedolaga_installer uninstall
 ```
 
 ### Справка
 ```bash
-./bedolaga_installer help
+bedolaga_installer help
 ```
 
 ---
@@ -149,12 +138,12 @@ bot uninstall    # Удаление
 
 ---
 
-## 🛠️ Сборка из исходников
+## 🛠️ Ручная сборка
 
 ```bash
 # Клонировать репозиторий
 git clone https://github.com/wrx861/Bedolaga_insta.git
-cd bedolaga_auto_install/installer
+cd Bedolaga_insta
 
 # Установить зависимости
 go mod tidy
@@ -162,9 +151,8 @@ go mod tidy
 # Собрать
 go build -o bedolaga_installer main.go
 
-# Кросс-компиляция
-GOOS=linux GOARCH=amd64 go build -o dist/bedolaga-installer-linux-amd64 main.go
-GOOS=linux GOARCH=arm64 go build -o dist/bedolaga-installer-linux-arm64 main.go
+# Запустить
+./bedolaga_installer install
 ```
 
 ---
