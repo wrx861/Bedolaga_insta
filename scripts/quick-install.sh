@@ -56,8 +56,8 @@ case "$ARCH" in
         ;;
 esac
 
-# URL для загрузки
-DOWNLOAD_URL="https://github.com/wrx861/Bedolaga_insta/releases/latest/download/${BINARY}"
+# URL для загрузки (напрямую из репозитория)
+DOWNLOAD_URL="https://raw.githubusercontent.com/wrx861/Bedolaga_insta/main/dist/${BINARY}"
 INSTALL_PATH="/usr/local/bin/bedolaga_installer"
 
 echo -e "${C}  ↓${NC} Загрузка установщика..."
