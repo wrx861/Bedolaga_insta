@@ -4,7 +4,7 @@
 # ╚══════════════════════════════════════════════════════════════╝
 # 
 # Использование:
-#   curl -fsSL https://raw.githubusercontent.com/wrx861/bedolaga_auto_install/main/scripts/quick-install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/wrx861/Bedolaga_insta/main/scripts/quick-install.sh | bash
 #
 
 set -e
