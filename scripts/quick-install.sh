@@ -101,15 +101,15 @@ go build -o "$INSTALL_PATH" main.go 2>/dev/null
 chmod +x "$INSTALL_PATH"
 echo -e "${G}  ✓${NC} Установщик собран: ${C}${INSTALL_PATH}${NC}"
 
+# Переходим в домашнюю директорию ПЕРЕД удалением tmp
+cd /root
+
 # Очистка
 rm -rf "$TMP_DIR"
 
 echo
 echo -e "${D}  ─────────────────────────────────────────────${NC}"
 echo
-
-# Переходим в домашнюю директорию перед запуском
-cd /root
 
 # Запуск установщика
 exec "$INSTALL_PATH" install
