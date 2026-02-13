@@ -2689,12 +2689,12 @@ func installWizard() {
 	printBanner()
 	checkRoot()
 
-	printBox("Перед началом",
-		dimStyle.Render("Убедитесь, что у вас есть:\n\n")+
-			"  "+highlightStyle.Render("1.")+dimStyle.Render(" BOT_TOKEN от @BotFather\n")+
-			"  "+highlightStyle.Render("2.")+dimStyle.Render(" Ваш Telegram ID (от @userinfobot)\n")+
-			"  "+highlightStyle.Render("3.")+dimStyle.Render(" REMNAWAVE_API_KEY из настроек панели\n")+
-			"  "+highlightStyle.Render("4.")+dimStyle.Render(" DNS-записи для доменов (если используете webhook)"))
+	printBox("📋 Перед началом",
+		infoStyle.Render("Убедитесь, что у вас есть:")+"\n\n"+
+			highlightStyle.Render("  1. ")+"BOT_TOKEN от @BotFather\n"+
+			highlightStyle.Render("  2. ")+"Ваш Telegram ID (от @userinfobot)\n"+
+			highlightStyle.Render("  3. ")+"REMNAWAVE_API_KEY из настроек панели\n"+
+			highlightStyle.Render("  4. ")+"DNS-записи для доменов (опционально)")
 
 	if !confirmPrompt("Начать установку?", true) {
 		os.Exit(0)
