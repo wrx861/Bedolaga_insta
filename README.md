@@ -17,21 +17,21 @@
 ## ⚡ Быстрая установка
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/wrx861/bedolaga_auto_install/main/scripts/quick-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/wrx861/Bedolaga_insta/main/scripts/quick-install.sh | bash
 ```
 
 Или скачайте бинарник напрямую:
 
 ```bash
 # Для Linux AMD64
-curl -fsSL https://github.com/wrx861/bedolaga_auto_install/releases/latest/download/bedolaga-installer-linux-amd64 -o bedolaga_installer
+curl -fsSL https://github.com/wrx861/Bedolaga_insta/releases/latest/download/bedolaga-installer-linux-amd64 -o bedolaga_installer
 chmod +x bedolaga_installer
 ./bedolaga_installer
 ```
 
 ```bash
 # Для Linux ARM64 (Raspberry Pi, Oracle Cloud, etc.)
-curl -fsSL https://github.com/wrx861/bedolaga_auto_install/releases/latest/download/bedolaga-installer-linux-arm64 -o bedolaga_installer
+curl -fsSL https://github.com/wrx861/Bedolaga_insta/releases/latest/download/bedolaga-installer-linux-arm64 -o bedolaga_installer
 chmod +x bedolaga_installer
 ./bedolaga_installer
 ```
@@ -153,7 +153,7 @@ bot uninstall    # Удаление
 
 ```bash
 # Клонировать репозиторий
-git clone https://github.com/wrx861/bedolaga_auto_install.git
+git clone https://github.com/wrx861/Bedolaga_insta.git
 cd bedolaga_auto_install/installer
 
 # Установить зависимости
@@ -186,7 +186,7 @@ GOOS=linux GOARCH=arm64 go build -o dist/bedolaga-installer-linux-arm64 main.go
 ## 🤝 Поддержка
 
 - 📱 Telegram: [@bedolaga_support](https://t.me/bedolaga_support)
-- 🐛 Issues: [GitHub Issues](https://github.com/wrx861/bedolaga_auto_install/issues)
+- 🐛 Issues: [GitHub Issues](https://github.com/wrx861/Bedolaga_insta/issues)
 
 ---
 
