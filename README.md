@@ -24,14 +24,14 @@ curl -fsSL https://raw.githubusercontent.com/wrx861/Bedolaga_insta/main/scripts/
 
 ```bash
 # Для Linux AMD64
-curl -fsSL https://github.com/wrx861/Bedolaga_insta/releases/latest/download/bedolaga-installer-linux-amd64 -o bedolaga_installer
+curl -fsSL https://raw.githubusercontent.com/wrx861/Bedolaga_insta/main/dist/bedolaga-installer-linux-amd64 -o bedolaga_installer
 chmod +x bedolaga_installer
 ./bedolaga_installer
 ```
 
 ```bash
 # Для Linux ARM64 (Raspberry Pi, Oracle Cloud, etc.)
-curl -fsSL https://github.com/wrx861/Bedolaga_insta/releases/latest/download/bedolaga-installer-linux-arm64 -o bedolaga_installer
+curl -fsSL https://raw.githubusercontent.com/wrx861/Bedolaga_insta/main/dist/bedolaga-installer-linux-arm64 -o bedolaga_installer
 chmod +x bedolaga_installer
 ./bedolaga_installer
 ```
