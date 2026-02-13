@@ -1082,8 +1082,8 @@ func checkPostgresVolume(cfg *Config) {
 }
 
 func interactiveSetup(cfg *Config) {
-	printBox("Интерактивная настройка",
-		dimStyle.Render("Введите необходимые данные для настройки бота.\n")+
+	printBox("⚙️  Интерактивная настройка",
+		"Введите необходимые данные для настройки бота.\n"+
 			dimStyle.Render("Необязательные поля можно пропустить клавишей Esc."))
 
 	// 1. BOT_TOKEN
