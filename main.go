@@ -2772,6 +2772,9 @@ func installWizard() {
 // ════════════════════════════════════════════════════════════════
 
 func main() {
+	// Переходим в существующую директорию чтобы избежать ошибок getcwd
+	os.Chdir("/root")
+	
 	setupSignalHandler()
 
 	if len(os.Args) < 2 {
