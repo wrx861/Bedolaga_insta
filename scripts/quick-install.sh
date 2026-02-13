@@ -10,14 +10,13 @@
 set -e
 
 # Цвета
-P='\033[0;35m'   # Purple
-G='\033[0;32m'   # Green
-R='\033[0;31m'   # Red
-Y='\033[1;33m'   # Yellow
-C='\033[0;36m'   # Cyan
-W='\033[1;37m'   # White
-D='\033[0;90m'   # Dim
-A='\033[38;5;214m' # Amber
+P='\033[0;35m'
+G='\033[0;32m'
+R='\033[0;31m'
+Y='\033[1;33m'
+C='\033[0;36m'
+D='\033[0;90m'
+A='\033[38;5;214m'
 NC='\033[0m'
 
 # Баннер
@@ -39,44 +38,72 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# Определение архитектуры
-ARCH=$(uname -m)
-case "$ARCH" in
-    x86_64)
-        BINARY="bedolaga-installer-linux-amd64"
-        echo -e "${G}  ✓${NC} Архитектура: ${C}amd64${NC}"
-        ;;
-    aarch64|arm64)
-        BINARY="bedolaga-installer-linux-arm64"
-        echo -e "${G}  ✓${NC} Архитектура: ${C}arm64${NC}"
-        ;;
-    *)
-        echo -e "${R}  ✗ Неподдерживаемая архитектура: $ARCH${NC}"
-        exit 1
-        ;;
-esac
-
-# URL для загрузки (напрямую из репозитория)
-DOWNLOAD_URL="https://raw.githubusercontent.com/wrx861/Bedolaga_insta/main/dist/${BINARY}"
 INSTALL_PATH="/usr/local/bin/bedolaga_installer"
+REPO_URL="https://github.com/wrx861/Bedolaga_insta.git"
+TMP_DIR="/tmp/bedolaga_installer_build"
 
-echo -e "${C}  ↓${NC} Загрузка установщика..."
+# Проверяем наличие Go
+install_go() {
+    echo -e "${C}  ↓${NC} Установка Go..."
+    
+    ARCH=$(uname -m)
+    case "$ARCH" in
+        x86_64)
+            GO_ARCH="amd64"
+            ;;
+        aarch64|arm64)
+            GO_ARCH="arm64"
+            ;;
+        *)
+            echo -e "${R}  ✗ Неподдерживаемая архитектура: $ARCH${NC}"
+            exit 1
+            ;;
+    esac
+    
+    GO_VERSION="1.21.11"
+    GO_URL="https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz"
+    
+    curl -fsSL "$GO_URL" -o /tmp/go.tar.gz
+    rm -rf /usr/local/go
+    tar -C /usr/local -xzf /tmp/go.tar.gz
+    rm /tmp/go.tar.gz
+    
+    export PATH=/usr/local/go/bin:$PATH
+    echo -e "${G}  ✓${NC} Go ${GO_VERSION} установлен"
+}
 
-# Загрузка
-if command -v curl &> /dev/null; then
-    curl -fsSL "$DOWNLOAD_URL" -o "$INSTALL_PATH"
-elif command -v wget &> /dev/null; then
-    wget -q "$DOWNLOAD_URL" -O "$INSTALL_PATH"
+# Проверяем Go
+if command -v go &> /dev/null; then
+    GO_VER=$(go version | awk '{print $3}' | sed 's/go//')
+    echo -e "${G}  ✓${NC} Go: ${C}${GO_VER}${NC}"
+    export PATH=/usr/local/go/bin:$PATH
 else
-    echo -e "${R}  ✗ Требуется curl или wget${NC}"
-    echo -e "${D}    Установите: apt-get install -y curl${NC}"
-    exit 1
+    install_go
 fi
 
-# Права на выполнение
-chmod +x "$INSTALL_PATH"
+# Проверяем git
+if ! command -v git &> /dev/null; then
+    echo -e "${C}  ↓${NC} Установка git..."
+    apt-get update -qq && apt-get install -y -qq git > /dev/null 2>&1
+    echo -e "${G}  ✓${NC} Git установлен"
+fi
 
-echo -e "${G}  ✓${NC} Установщик загружен: ${C}${INSTALL_PATH}${NC}"
+# Клонируем и собираем
+echo -e "${C}  ↓${NC} Клонирование репозитория..."
+rm -rf "$TMP_DIR"
+git clone --depth 1 -q "$REPO_URL" "$TMP_DIR"
+echo -e "${G}  ✓${NC} Репозиторий клонирован"
+
+echo -e "${C}  ⚙${NC} Сборка установщика..."
+cd "$TMP_DIR"
+export PATH=/usr/local/go/bin:$PATH
+go build -o "$INSTALL_PATH" main.go 2>/dev/null
+chmod +x "$INSTALL_PATH"
+echo -e "${G}  ✓${NC} Установщик собран: ${C}${INSTALL_PATH}${NC}"
+
+# Очистка
+rm -rf "$TMP_DIR"
+
 echo
 echo -e "${D}  ─────────────────────────────────────────────${NC}"
 echo
