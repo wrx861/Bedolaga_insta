@@ -93,7 +93,8 @@ var (
 			BorderForeground(colorPrimary).
 			Padding(1, 2).
 			MarginTop(1).
-			MarginBottom(1)
+			MarginBottom(1).
+			Width(70)
 
 	successBoxStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
