@@ -30,7 +30,7 @@ echo "  / __  / __/ / / / / / / / /   / /| |/ / __/ /| | "
 echo " / /_/ / /___/ /_/ / /_/ / /___/ ___ / /_/ / ___ | "
 echo "/_____/_____/_____/\____/_____/_/  |_\____/_/  |_| "
 echo -e "${NC}"
-echo -e "${A}  УСТАНОВЩИК BEDOLAGA BOT${NC}  ${D}v2.0.1${NC}"
+echo -e "${A}  УСТАНОВЩИК BEDOLAGA BOT${NC}  ${D}v2.2.0${NC}"
 echo -e "${D}  ─────────────────────────────────────────────${NC}"
 echo
 
@@ -63,7 +63,7 @@ install_go() {
             ;;
     esac
     
-    GO_VERSION="1.21.11"
+    GO_VERSION="1.24.4"
     GO_URL="https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz"
     
     curl -fsSL "$GO_URL" -o /tmp/go.tar.gz
@@ -100,7 +100,7 @@ echo -e "${G}  ✓${NC} Репозиторий клонирован"
 echo -e "${C}  ⚙${NC} Сборка установщика..."
 cd "$TMP_DIR"
 export PATH=/usr/local/go/bin:$PATH
-go build -o "$INSTALL_PATH" main.go 2>/dev/null
+go build -o "$INSTALL_PATH" . 2>/dev/null
 chmod +x "$INSTALL_PATH"
 echo -e "${G}  ✓${NC} Установщик собран: ${C}${INSTALL_PATH}${NC}"
 
