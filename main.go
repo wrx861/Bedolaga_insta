@@ -2567,7 +2567,7 @@ do_uninstall() {
     read -p "  Удалить данные (тома)? (y/n): " -n 1 -r; echo
     [[ $REPLY =~ ^[Yy]$ ]] && docker compose -f "$COMPOSE_FILE" down -v
     [ -f "/usr/local/bin/bot" ] && rm -f /usr/local/bin/bot && echo -e "${G}  ✓ Команда 'bot' удалена${NC}"
-    echo -e "${G}  ✓ Removal complete${NC}"
+    echo -e "${G}  ✓ Удаление завершено${NC}"
     echo -e "${Y}  Directory preserved: $INSTALL_DIR${NC}"
 }
 
