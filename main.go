@@ -935,33 +935,29 @@ func installDocker() {
 		ver, _ := runShellSilent("docker --version")
 		globalProgress.done("Docker: " + ver)
 	} else {
-		runWithSpinner("Установка Docker...", func() error {
-			_, err := runShellSilent("DEBIAN_FRONTEND=noninteractive curl -fsSL https://get.docker.com | sh")
-			if err != nil {
-				return err
-			}
-			runShellSilent("systemctl enable docker 2>/dev/null || true")
-			runShellSilent("systemctl start docker 2>/dev/null || true")
-			return nil
-		})
+		// Установка Docker без спиннера
+		runShellSilent("DEBIAN_FRONTEND=noninteractive curl -fsSL https://get.docker.com | sh")
+		runShellSilent("systemctl enable docker 2>/dev/null || true")
+		runShellSilent("systemctl start docker 2>/dev/null || true")
+		
 		// Проверяем, что Docker реально установился
 		if !commandExists("docker") {
-			printErrorBox("Не удалось установить Docker!")
-			printInfo("Попробуйте установить Docker вручную: curl -fsSL https://get.docker.com | sh")
+			globalProgress.fail("Не удалось установить Docker!")
+			globalProgress.info("Попробуйте установить Docker вручную: curl -fsSL https://get.docker.com | sh")
 			os.Exit(1)
 		}
 		ver, _ := runShellSilent("docker --version")
-		printSuccess("Docker установлен: " + ver)
+		globalProgress.done("Docker установлен: " + ver)
 	}
 	
 	// Проверяем Docker Compose
 	if out, err := runShellSilent("docker compose version 2>/dev/null"); err == nil && out != "" {
-		printSuccess("Docker Compose: " + out)
+		globalProgress.done("Docker Compose: " + out)
 	} else if out, err := runShellSilent("docker-compose --version 2>/dev/null"); err == nil && out != "" {
-		printSuccess("Docker Compose (standalone): " + out)
+		globalProgress.done("Docker Compose (standalone): " + out)
 	} else {
-		printErrorBox("Docker Compose не найден!")
-		printInfo("Установите Docker Compose: apt install docker-compose-plugin")
+		globalProgress.fail("Docker Compose не найден!")
+		globalProgress.info("Установите Docker Compose: apt install docker-compose-plugin")
 		os.Exit(1)
 	}
 }
