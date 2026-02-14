@@ -2546,7 +2546,7 @@ do_health() {
     echo -e "${A}  ╚══════════════════════════════════╝${NC}"
     echo
     docker ps --format '{{.Names}}' | grep -q "remnawave_bot$" && echo -e "${G}  ✓ Бот: работает${NC}" || echo -e "${R}  ✗ Бот: не запущен${NC}"
-    docker compose -f "$COMPOSE_FILE" exec -T postgres pg_isready -U remnawave_user >/dev/null 2>&1 && echo -e "${G}  ✓ PostgreSQL: healthy${NC}" || echo -e "${R}  x PostgreSQL: down${NC}"
+    docker compose -f "$COMPOSE_FILE" exec -T postgres pg_isready -U remnawave_user >/dev/null 2>&1 && echo -e "${G}  ✓ PostgreSQL: работает${NC}" || echo -e "${R}  ✗ PostgreSQL: не доступен${NC}"
     docker compose -f "$COMPOSE_FILE" exec -T redis redis-cli ping >/dev/null 2>&1 && echo -e "${G}  ✓ Redis: healthy${NC}" || echo -e "${R}  x Redis: down${NC}"
     echo
     echo -e "${D}  Last 10 log lines:${NC}"
