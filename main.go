@@ -664,9 +664,15 @@ func runShell(command string) error {
 }
 
 func runShellSilent(command string) (string, error) {
-	cmd := exec.Command("bash", "-c", command)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "bash", "-c", command)
 	cmd.Dir = "/root"
+	cmd.Env = append(os.Environ(), "DEBIAN_FRONTEND=noninteractive")
 	out, err := cmd.CombinedOutput()
+	if ctx.Err() == context.DeadlineExceeded {
+		return "", fmt.Errorf("команда превысила таймаут: %s", command)
+	}
 	return strings.TrimSpace(string(out)), err
 }
 
