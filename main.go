@@ -2564,7 +2564,7 @@ do_uninstall() {
     read -p "  Введите 'yes' для подтверждения: " CONFIRM
     [ "$CONFIRM" != "yes" ] && echo "  Отменено" && return
     docker compose -f "$COMPOSE_FILE" down
-    read -p "  Delete data (volumes)? (y/n): " -n 1 -r; echo
+    read -p "  Удалить данные (тома)? (y/n): " -n 1 -r; echo
     [[ $REPLY =~ ^[Yy]$ ]] && docker compose -f "$COMPOSE_FILE" down -v
     [ -f "/usr/local/bin/bot" ] && rm -f /usr/local/bin/bot && echo -e "${G}  ✓ 'bot' command removed${NC}"
     echo -e "${G}  ✓ Removal complete${NC}"
