@@ -160,14 +160,17 @@ func printBanner() {
 // ════════════════════════════════════════════════════════════════
 
 type installProgress struct {
-	current int
-	total   int
-	steps   []string
+	current   int
+	total     int
+	steps     []string
+	lastLine  string
+	silent    bool // Подавлять промежуточный вывод
 }
 
 var globalProgress = installProgress{
 	current: 0,
 	total:   12,
+	silent:  true, // Лайв-режим по умолчанию
 	steps: []string{
 		"Проверка системы",
 		"Установка пакетов",
