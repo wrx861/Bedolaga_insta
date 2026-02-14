@@ -2623,7 +2623,7 @@ show_help() {
     echo -e "  ${W}backup${NC}            Создать бэкап"
     echo -e "  ${W}health${NC}            Диагностика системы"
     echo -e "  ${W}config${NC}            Редактировать .env"
-    echo -e "  ${W}uninstall${NC}  Remove bot"
+    echo -e "  ${W}uninstall${NC}         Удалить бота"
 }
 
 case "$1" in
