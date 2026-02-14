@@ -2322,6 +2322,9 @@ func printFinalInfo(cfg *Config) {
 	if cfg.MiniappDomain != "" {
 		b.WriteString(highlightStyle.Render("  MiniApp: ") + infoStyle.Render("https://"+cfg.MiniappDomain) + "\n")
 	}
+	if cfg.RemnawaveSecretKey != "" {
+		b.WriteString(highlightStyle.Render("  eGames:  ") + successStyle.Render("SECRET_KEY настроен") + "\n")
+	}
 
 	fmt.Println("\n  " + sep)
 	fmt.Println(successBoxStyle.Render(b.String()))
