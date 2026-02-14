@@ -2585,7 +2585,7 @@ show_menu() {
     echo
     echo -e "  ${D}─────────────────────────────────────────${NC}"
     echo
-    echo -e "  ${A}1${NC}  Logs              ${A}6${NC}  Backup"
+    echo -e "  ${A}1${NC}  Логи              ${A}6${NC}  Бэкап"
     echo -e "  ${A}2${NC}  Status            ${A}7${NC}  Health Check"
     echo -e "  ${A}3${NC}  Restart           ${A}8${NC}  Edit Config"
     echo -e "  ${A}4${NC}  Start             ${A}9${NC}  Update Bot"
