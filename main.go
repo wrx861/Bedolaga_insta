@@ -11,7 +11,7 @@ import (
 // VERSION & CONSTANTS
 // ════════════════════════════════════════════════════════════════
 
-var appVersion = "2.0.0"
+var appVersion = "2.1.0"
 
 const repoURL = "https://github.com/BEDOLAGA-DEV/remnawave-bedolaga-telegram-bot.git"
 
