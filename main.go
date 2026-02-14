@@ -628,9 +628,9 @@ func confirmPrompt(prompt string, defaultYes bool) bool {
 	if !isInteractive() {
 		// В неинтерактивном режиме используем значение по умолчанию
 		if defaultYes {
-			fmt.Println(successStyle.Render("  ✓ Да (по умолчанию)"))
+			fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s: Да (авто)", prompt)))
 		} else {
-			fmt.Println(dimStyle.Render("  - Нет (по умолчанию)"))
+			fmt.Println(dimStyle.Render(fmt.Sprintf("  - %s: Нет (авто)", prompt)))
 		}
 		return defaultYes
 	}
@@ -642,9 +642,9 @@ func confirmPrompt(prompt string, defaultYes bool) bool {
 	}
 	final := result.(confirmModel)
 	if final.selected {
-		fmt.Println(successStyle.Render("  ✓ Да"))
+		fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s: Да", prompt)))
 	} else {
-		fmt.Println(dimStyle.Render("  - Нет"))
+		fmt.Println(dimStyle.Render(fmt.Sprintf("  - %s: Нет", prompt)))
 	}
 	return final.selected
 }
