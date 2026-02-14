@@ -225,50 +225,31 @@ func createCaddyfile(cfg *Config) {
 }
 
 func createCaddyCompose(cfg *Config) {
-	// Определяем сеть бота
-	networkName := "remnawave_bot_network"
-
-	// Volumes для miniapp если нужен
+	// Caddy использует host network mode для доступа к интернету (Let's Encrypt)
+	// и к боту на 127.0.0.1:8080
 	miniappVolume := ""
 	if cfg.MiniappDomain != "" {
 		miniappVolume = fmt.Sprintf(`
       - %s/miniapp:/srv/miniapp:ro`, cfg.InstallDir)
 	}
 
-	// Caddy нужен доступ к интернету (для Let's Encrypt) + к сети бота
 	content := fmt.Sprintf(`services:
   caddy:
     image: caddy:2-alpine
     container_name: remnawave_caddy
     restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
+    network_mode: host
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config%s
-    networks:
-      - bot_network
-      - default
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
 
 volumes:
   caddy_data:
     driver: local
   caddy_config:
     driver: local
-
-networks:
-  bot_network:
-    name: %s
-    external: true
-  default:
-    driver: bridge
-`, miniappVolume, networkName)
+`, miniappVolume)
 
 	os.WriteFile(filepath.Join(cfg.InstallDir, "docker-compose.caddy.yml"), []byte(content), 0644)
 }
