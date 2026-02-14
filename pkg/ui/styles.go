@@ -1,10 +1,6 @@
 package ui
 
-import (
-	"fmt"
-
-	"github.com/charmbracelet/lipgloss"
-)
+import "github.com/charmbracelet/lipgloss"
 
 // ════════════════════════════════════════════════════════════════
 // COLOR PALETTE (Premium Dark)
@@ -93,14 +89,3 @@ var (
 			Foreground(ColorSecondary).
 			Bold(true)
 )
-
-// ════════════════════════════════════════════════════════════════
-// UTILS
-// ════════════════════════════════════════════════════════════════
-
-// IsInteractive checks if stdin is a terminal
-func IsInteractive() bool {
-	fileInfo, _ := fmt.Fprintln, fmt.Fprintln // dummy to keep import
-	_ = fileInfo
-	return isInteractiveFn()
-}
