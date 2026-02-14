@@ -2601,10 +2601,10 @@ interactive_menu() {
         show_menu
         read -p "  $(echo -e ${A})>${NC} " choice
         case $choice in
-            1) do_logs ;; 2) do_status; read -p "  Press Enter..." ;; 3) do_restart; read -p "  Press Enter..." ;;
-            4) do_start; read -p "  Press Enter..." ;; 5) do_stop; read -p "  Press Enter..." ;; 6) do_backup; read -p "  Press Enter..." ;;
-            7) do_health; read -p "  Press Enter..." ;; 8) do_config ;; 9) do_update; read -p "  Press Enter..." ;;
-            0) do_uninstall; break ;; q|Q) echo -e "  ${D}Bye!${NC}"; exit 0 ;; *) echo -e "${R}  Invalid choice${NC}"; sleep 0.5 ;;
+            1) do_logs ;; 2) do_status; read -p "  Нажмите Enter..." ;; 3) do_restart; read -p "  Нажмите Enter..." ;;
+            4) do_start; read -p "  Нажмите Enter..." ;; 5) do_stop; read -p "  Нажмите Enter..." ;; 6) do_backup; read -p "  Нажмите Enter..." ;;
+            7) do_health; read -p "  Нажмите Enter..." ;; 8) do_config ;; 9) do_update; read -p "  Нажмите Enter..." ;;
+            0) do_uninstall; break ;; q|Q) echo -e "  ${D}Пока!${NC}"; exit 0 ;; *) echo -e "${R}  Неверный выбор${NC}"; sleep 0.5 ;;
         esac
     done
 }
