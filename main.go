@@ -2491,7 +2491,7 @@ func createManagementScript(cfg *Config) {
 
 	script := fmt.Sprintf(`#!/bin/bash
 # ╔══════════════════════════════════════════════════════════════╗
-# ║   REMNAWAVE BEDOLAGA BOT — MANAGEMENT                       ║
+# ║   REMNAWAVE BEDOLAGA BOT — УПРАВЛЕНИЕ                       ║
 # ╚══════════════════════════════════════════════════════════════╝
 
 INSTALL_DIR="%s"
