@@ -185,6 +185,8 @@ func setupCaddy(cfg *Config) {
 	runShellSilent("systemctl disable nginx 2>/dev/null || true")
 	runShellSilent("systemctl stop apache2 2>/dev/null || true")
 	runShellSilent("systemctl disable apache2 2>/dev/null || true")
+	// Останавливаем remnawave-nginx если есть (он тоже занимает порт 80)
+	runShellSilent("docker stop remnawave-nginx 2>/dev/null || true")
 
 	// Создаём Caddyfile для Docker-контейнера
 	createCaddyfile(cfg)
