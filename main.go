@@ -1006,7 +1006,7 @@ func selectInstallDir(cfg *Config) {
 	case 2:
 		cfg.InstallDir = inputText("Путь установки", "/opt/my-bot", "Введите полный путь", true)
 	}
-	printInfo("Каталог: " + highlightStyle.Render(cfg.InstallDir))
+	globalProgress.info("Каталог: " + highlightStyle.Render(cfg.InstallDir))
 }
 
 func checkRemnawavePanel(cfg *Config) {
@@ -1020,7 +1020,7 @@ func checkRemnawavePanel(cfg *Config) {
 		setupLocalPanel(cfg)
 	case 1:
 		cfg.PanelInstalledLocally = false
-		printInfo("Автономный режим — укажите внешний URL при настройке")
+		globalProgress.info("Автономный режим — укажите внешний URL при настройке")
 	}
 }
 
@@ -1040,21 +1040,19 @@ func setupLocalPanel(cfg *Config) {
 	}
 
 	if !dirExists(cfg.PanelDir) {
-		printWarning("Каталог " + cfg.PanelDir + " не найден")
-		printInfo("Переключаемся на режим внешней панели — укажите URL позже")
+		globalProgress.warn("Каталог " + cfg.PanelDir + " не найден")
+		globalProgress.info("Переключаемся на режим внешней панели — укажите URL позже")
 		cfg.PanelInstalledLocally = false
 		cfg.PanelDir = ""
 		cfg.DockerNetwork = ""
 		return
 	}
 	
-	printSuccess("Панель найдена: " + cfg.PanelDir)
+	globalProgress.done("Панель найдена: " + cfg.PanelDir)
 	detectPanelNetwork(cfg)
 }
 
 func detectPanelNetwork(cfg *Config) {
-	printStep("Поиск Docker-сети")
-
 	found := false
 
 	// Method 1: by running container
