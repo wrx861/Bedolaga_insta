@@ -115,7 +115,7 @@ echo -e "${G}  ✓${NC} Репозиторий клонирован"
 echo -e "${C}  ⚙${NC} Сборка установщика..."
 cd "$TMP_DIR"
 export PATH=/usr/local/go/bin:$PATH
-go build -o "$INSTALL_PATH" . 2>/dev/null
+go build -o "$INSTALL_PATH" .
 chmod +x "$INSTALL_PATH"
 echo -e "${G}  ✓${NC} Установщик собран: ${C}${INSTALL_PATH}${NC}"
 
