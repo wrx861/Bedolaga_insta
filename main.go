@@ -2530,11 +2530,11 @@ do_backup() {
     check_dir
     local BK="$INSTALL_DIR/data/backups/$(date +%%Y%%m%%d_%%H%%M%%S)"
     mkdir -p "$BK"
-    echo -e "${C}  Creating backup...${NC}"
-    docker compose -f "$COMPOSE_FILE" exec -T postgres pg_dump -U remnawave_user remnawave_bot > "$BK/database.sql" 2>/dev/null && echo -e "${G}  ✓ database.sql${NC}" || echo -e "${R}  x DB backup failed${NC}"
+    echo -e "${C}  Создание бэкапа...${NC}"
+    docker compose -f "$COMPOSE_FILE" exec -T postgres pg_dump -U remnawave_user remnawave_bot > "$BK/database.sql" 2>/dev/null && echo -e "${G}  ✓ database.sql${NC}" || echo -e "${R}  ✗ Ошибка бэкапа БД${NC}"
     cp .env "$BK/.env" 2>/dev/null && echo -e "${G}  ✓ .env${NC}"
     cp docker-compose*.yml "$BK/" 2>/dev/null
-    echo -e "${G}  ✓ Backup: $BK${NC}"
+    echo -e "${G}  ✓ Бэкап: $BK${NC}"
     ls -dt "$INSTALL_DIR/data/backups"/*/  2>/dev/null | tail -n +6 | xargs -r rm -rf
 }
 
