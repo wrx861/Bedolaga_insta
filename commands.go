@@ -96,7 +96,12 @@ func installWizard() {
 				composeFile = "docker-compose.local.yml"
 			}
 			allowExit = true
-			runShell(fmt.Sprintf("cd %s && docker compose -f %s logs --tail=150 -f bot", cfg.InstallDir, composeFile))
+			// Используем exec для замены текущего процесса
+			cmd := exec.Command("bash", "-c", fmt.Sprintf("cd %s && docker compose -f %s logs --tail=150 -f bot", cfg.InstallDir, composeFile))
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			cmd.Stdin = os.Stdin
+			cmd.Run()
 		}
 	}
 }
