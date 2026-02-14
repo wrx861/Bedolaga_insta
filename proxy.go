@@ -180,6 +180,12 @@ func setupNginxPanel(cfg *Config) {
 // ════════════════════════════════════════════════════════════════
 
 func setupCaddy(cfg *Config) {
+	// Останавливаем nginx/apache если запущены (они занимают порт 80)
+	runShellSilent("systemctl stop nginx 2>/dev/null || true")
+	runShellSilent("systemctl disable nginx 2>/dev/null || true")
+	runShellSilent("systemctl stop apache2 2>/dev/null || true")
+	runShellSilent("systemctl disable apache2 2>/dev/null || true")
+
 	// Создаём Caddyfile для Docker-контейнера
 	createCaddyfile(cfg)
 	// Создаём docker-compose для Caddy
