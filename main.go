@@ -2635,7 +2635,7 @@ esac
 `, cfg.InstallDir, composeFile)
 
 	os.WriteFile("/usr/local/bin/bot", []byte(script), 0755)
-	printSuccess("Команда управления 'bot' установлена")
+	globalProgress.done("Команда 'bot' установлена")
 }
 
 // ════════════════════════════════════════════════════════════════
