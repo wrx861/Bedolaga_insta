@@ -2614,7 +2614,7 @@ show_help() {
     echo -e "  ${D}Использование: bot [команда]${NC}"
     echo
     echo -e "  ${W}(без аргументов)${NC}  Интерактивное меню"
-    echo -e "  ${W}logs${NC}       View bot logs"
+    echo -e "  ${W}logs${NC}              Просмотр логов"
     echo -e "  ${W}status${NC}     Container status"
     echo -e "  ${W}restart${NC}    Restart bot"
     echo -e "  ${W}start${NC}      Start bot"
