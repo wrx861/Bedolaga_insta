@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"syscall"
 
 	"bedolaga-installer/pkg/ui"
 
@@ -23,6 +24,9 @@ const repoURL = "https://github.com/BEDOLAGA-DEV/remnawave-bedolaga-telegram-bot
 
 func main() {
 	os.Chdir("/root")
+
+	// Fix stdin for curl | bash — reopen from /dev/tty
+	reopenStdinIfPipe()
 
 	setupSignalHandler()
 
