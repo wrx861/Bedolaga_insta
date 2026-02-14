@@ -419,23 +419,23 @@ func (m selectModel) View() string {
 func selectOption(title string, items []selectItem) int {
 	if !isInteractive() {
 		// В неинтерактивном режиме выбираем первый вариант
-		fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s (авто)", items[0].title)))
+		fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s: %s (авто)", title, items[0].title)))
 		return 0
 	}
 	m := newSelectModel(title, items)
 	p := tea.NewProgram(m)
 	result, err := p.Run()
 	if err != nil {
-		fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s (по умолчанию)", items[0].title)))
+		fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s: %s (по умолчанию)", title, items[0].title)))
 		return 0
 	}
 	final := result.(selectModel)
 	if final.selected >= 0 && final.selected < len(items) {
-		fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s", items[final.selected].title)))
+		fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s: %s", title, items[final.selected].title)))
 		return final.selected
 	}
 	// Если ничего не выбрано — первый вариант
-	fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s (по умолчанию)", items[0].title)))
+	fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s: %s (по умолчанию)", title, items[0].title)))
 	return 0
 }
 
