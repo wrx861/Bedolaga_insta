@@ -377,14 +377,25 @@ func (m selectModel) View() string {
 }
 
 func selectOption(title string, items []selectItem) int {
+	if !isInteractive() {
+		// В неинтерактивном режиме выбираем первый вариант
+		printWarning("Неинтерактивный режим — выбран вариант по умолчанию: " + items[0].title)
+		return 0
+	}
 	m := newSelectModel(title, items)
 	p := tea.NewProgram(m)
-	result, _ := p.Run()
-	final := result.(selectModel)
-	if final.selected >= 0 {
-		fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s", items[final.selected].title)))
+	result, err := p.Run()
+	if err != nil {
+		printWarning("Ошибка выбора, используется значение по умолчанию: " + items[0].title)
+		return 0
 	}
-	return final.selected
+	final := result.(selectModel)
+	if final.selected >= 0 && final.selected < len(items) {
+		fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s", items[final.selected].title)))
+		return final.selected
+	}
+	// Если ничего не выбрано — первый вариант
+	return 0
 }
 
 // ════════════════════════════════════════════════════════════════
