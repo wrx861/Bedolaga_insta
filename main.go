@@ -2542,7 +2542,7 @@ do_health() {
     check_dir
     echo
     echo -e "${A}  ╔══════════════════════════════════╗${NC}"
-    echo -e "${A}  ║     SYSTEM DIAGNOSTICS            ║${NC}"
+    echo -e "${A}  ║       ДИАГНОСТИКА СИСТЕМЫ         ║${NC}"
     echo -e "${A}  ╚══════════════════════════════════╝${NC}"
     echo
     docker ps --format '{{.Names}}' | grep -q "remnawave_bot$" && echo -e "${G}  ✓ Bot: running${NC}" || echo -e "${R}  x Bot: not running${NC}"
