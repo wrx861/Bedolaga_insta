@@ -1355,11 +1355,27 @@ func createEnvFile(cfg *Config) {
 		cfg.PostgresPassword = cfg.OldPostgresPassword
 	}
 
-	basicAuthLines := ""
+	// Basic Auth строки
+	basicAuthLines := "#REMNAWAVE_USERNAME=\n#REMNAWAVE_PASSWORD="
 	if cfg.RemnawaveAuthType == "basic_auth" {
 		basicAuthLines = fmt.Sprintf("REMNAWAVE_USERNAME=%s\nREMNAWAVE_PASSWORD=%s", cfg.RemnawaveUsername, cfg.RemnawavePassword)
-	} else {
-		basicAuthLines = "#REMNAWAVE_USERNAME=\n#REMNAWAVE_PASSWORD="
+	}
+
+	// Webhook строки — закомментировать если пустые
+	webhookURLLine := "#WEBHOOK_URL="
+	if cfg.WebhookURL != "" {
+		webhookURLLine = fmt.Sprintf("WEBHOOK_URL=%s", cfg.WebhookURL)
+	}
+
+	webhookSecretLine := "#WEBHOOK_SECRET_TOKEN="
+	if cfg.WebhookSecretToken != "" {
+		webhookSecretLine = fmt.Sprintf("WEBHOOK_SECRET_TOKEN=%s", cfg.WebhookSecretToken)
+	}
+
+	// Secret Key — закомментировать если пустой
+	secretKeyLine := "#REMNAWAVE_SECRET_KEY="
+	if cfg.RemnawaveSecretKey != "" {
+		secretKeyLine = fmt.Sprintf("REMNAWAVE_SECRET_KEY=%s", cfg.RemnawaveSecretKey)
 	}
 
 	cabinetJWTSecret := generateToken()
@@ -1390,13 +1406,13 @@ REMNAWAVE_API_URL=%s
 REMNAWAVE_API_KEY=%s
 REMNAWAVE_AUTH_TYPE=%s
 %s
-REMNAWAVE_SECRET_KEY=%s
+%s
 
 # ===== BOT MODE =====
 BOT_RUN_MODE=%s
-WEBHOOK_URL=%s
+%s
 WEBHOOK_PATH=/webhook
-WEBHOOK_SECRET_TOKEN=%s
+%s
 
 # ===== WEB API =====
 WEB_API_ENABLED=%s
