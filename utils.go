@@ -12,6 +12,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"bedolaga-installer/pkg/ui"
 )
 
 // ════════════════════════════════════════════════════════════════
@@ -63,11 +65,6 @@ func commandExists(name string) bool {
 	return err == nil
 }
 
-func isInteractive() bool {
-	fileInfo, _ := os.Stdin.Stat()
-	return (fileInfo.Mode() & os.ModeCharDevice) != 0
-}
-
 func generateToken() string {
 	b := make([]byte, 32)
 	rand.Read(b)
@@ -115,20 +112,20 @@ func cleanDomain(input string) string {
 func checkDomainDNS(domain string) bool {
 	serverIP, err := runShellSilent("curl -4 -s --connect-timeout 5 ifconfig.me 2>/dev/null || curl -4 -s --connect-timeout 5 icanhazip.com 2>/dev/null")
 	if err != nil || serverIP == "" {
-		printWarning("Не удалось определить IP сервера")
+		ui.PrintWarning("Не удалось определить IP сервера")
 		return false
 	}
 	ips, err := net.LookupHost(domain)
 	if err != nil || len(ips) == 0 {
-		printWarning(fmt.Sprintf("DNS-запись для %s не найдена", domain))
+		ui.PrintWarning(fmt.Sprintf("DNS-запись для %s не найдена", domain))
 		return false
 	}
 	for _, ip := range ips {
 		if ip == strings.TrimSpace(serverIP) {
-			printSuccess(fmt.Sprintf("DNS %s → %s", domain, ip))
+			ui.PrintSuccess(fmt.Sprintf("DNS %s → %s", domain, ip))
 			return true
 		}
 	}
-	printWarning(fmt.Sprintf("Домен %s → %s, IP сервера %s", domain, ips[0], serverIP))
+	ui.PrintWarning(fmt.Sprintf("Домен %s → %s, IP сервера %s", domain, ips[0], serverIP))
 	return false
 }
