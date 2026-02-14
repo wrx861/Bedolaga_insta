@@ -263,8 +263,6 @@ func createCaddyCompose(cfg *Config) {
       - caddy_config:/config%s
     networks:
       - bot_network
-    depends_on:
-      - bot
 
 volumes:
   caddy_data:
