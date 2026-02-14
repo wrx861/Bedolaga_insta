@@ -472,13 +472,27 @@ func (m inputModel) View() string {
 }
 
 func inputText(label, placeholder, hint string, required bool) string {
+	maxRetries := 3
+	retries := 0
 	for {
 		m := newInputModel(label, placeholder, hint, required)
 		p := tea.NewProgram(m)
-		result, _ := p.Run()
+		result, err := p.Run()
+		if err != nil {
+			if required {
+				printError("Ошибка ввода: " + err.Error())
+				os.Exit(1)
+			}
+			return ""
+		}
 		final := result.(inputModel)
 		val := strings.TrimSpace(final.input.Value())
 		if required && val == "" {
+			retries++
+			if retries >= maxRetries || !isInteractive() {
+				printError("Это поле обязательно! Запустите установщик в интерактивном режиме.")
+				os.Exit(1)
+			}
 			fmt.Println(errorStyle.Render("  ✗ Это поле обязательно, попробуйте снова"))
 			continue
 		}
