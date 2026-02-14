@@ -2588,7 +2588,7 @@ show_menu() {
     echo -e "  ${A}1${NC}  Логи              ${A}6${NC}  Бэкап"
     echo -e "  ${A}2${NC}  Статус            ${A}7${NC}  Диагностика"
     echo -e "  ${A}3${NC}  Перезапуск        ${A}8${NC}  Редактировать .env"
-    echo -e "  ${A}4${NC}  Start             ${A}9${NC}  Update Bot"
+    echo -e "  ${A}4${NC}  Запуск            ${A}9${NC}  Обновить бота"
     echo -e "  ${A}5${NC}  Stop              ${A}0${NC}  Uninstall"
     echo
     echo -e "  ${D}─────────────────────────────────────────${NC}"
