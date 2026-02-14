@@ -15,6 +15,15 @@ import (
 // ════════════════════════════════════════════════════════════════
 
 func manageBot() {
+	// Help не требует установленного бота
+	if len(os.Args) > 2 {
+		subcmd := os.Args[2]
+		if subcmd == "help" || subcmd == "--help" || subcmd == "-h" {
+			printManageHelp()
+			return
+		}
+	}
+
 	installDir := findInstallDir()
 	if installDir == "" {
 		printErrorBox(errorStyle.Render("Установка бота не найдена!\n") +
