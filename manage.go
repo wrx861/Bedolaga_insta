@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"bedolaga-installer/pkg/ui"
 )
 
 // ════════════════════════════════════════════════════════════════
@@ -26,8 +28,8 @@ func manageBot() {
 
 	installDir := findInstallDir()
 	if installDir == "" {
-		printErrorBox(errorStyle.Render("Установка бота не найдена!\n") +
-			dimStyle.Render("Ожидаемые пути:\n  /opt/remnawave-bedolaga-telegram-bot\n  /root/remnawave-bedolaga-telegram-bot"))
+		ui.PrintErrorBox(ui.ErrorStyle.Render("Установка бота не найдена!\n") +
+			ui.DimStyle.Render("Ожидаемые пути:\n  /opt/remnawave-bedolaga-telegram-bot\n  /root/remnawave-bedolaga-telegram-bot"))
 		os.Exit(1)
 	}
 	composeFile := detectComposeFile(installDir)
@@ -42,18 +44,18 @@ func manageBot() {
 	for {
 		printManageHeader(installDir)
 
-		idx := selectOption("Управление", []selectItem{
-			{title: "Логи", description: "Просмотр логов в реальном времени (Ctrl+C — выход)"},
-			{title: "Статус", description: "Контейнеры, порты и потребление ресурсов"},
-			{title: "Перезапуск", description: "Перезапустить все контейнеры"},
-			{title: "Запуск", description: "Запустить контейнеры"},
-			{title: "Остановка", description: "Остановить все контейнеры"},
-			{title: "Обновление", description: "git pull + пересборка Docker-образов"},
-			{title: "Бэкап", description: "Резервная копия БД и конфигурации"},
-			{title: "Диагностика", description: "Проверка работоспособности всех компонентов"},
-			{title: "Конфигурация", description: "Открыть .env в редакторе"},
-			{title: "Удаление", description: "Полное удаление бота и контейнеров"},
-			{title: "Выход", description: "Закрыть панель управления"},
+		idx := ui.SelectOption("Управление", []ui.SelectItem{
+			{Title: "Логи", Description: "Просмотр логов в реальном времени (Ctrl+C — выход)"},
+			{Title: "Статус", Description: "Контейнеры, порты и потребление ресурсов"},
+			{Title: "Перезапуск", Description: "Перезапустить все контейнеры"},
+			{Title: "Запуск", Description: "Запустить контейнеры"},
+			{Title: "Остановка", Description: "Остановить все контейнеры"},
+			{Title: "Обновление", Description: "git pull + пересборка Docker-образов"},
+			{Title: "Бэкап", Description: "Резервная копия БД и конфигурации"},
+			{Title: "Диагностика", Description: "Проверка работоспособности всех компонентов"},
+			{Title: "Конфигурация", Description: "Открыть .env в редакторе"},
+			{Title: "Удаление", Description: "Полное удаление бота и контейнеров"},
+			{Title: "Выход", Description: "Закрыть панель управления"},
 		})
 
 		switch idx {
@@ -87,7 +89,7 @@ func manageBot() {
 			return
 		default:
 			fmt.Println()
-			fmt.Println(dimStyle.Render("  Пока!"))
+			fmt.Println(ui.DimStyle.Render("  Пока!"))
 			return
 		}
 	}
@@ -99,22 +101,22 @@ func manageBot() {
 
 func printManageHeader(installDir string) {
 	fmt.Print("\033[2J\033[H") // Clear screen
-	printBanner()
+	ui.PrintBanner(appVersion)
 
-	fmt.Println(dimStyle.Render("  Каталог:  ") + infoStyle.Render(installDir))
+	fmt.Println(ui.DimStyle.Render("  Каталог:  ") + ui.InfoStyle.Render(installDir))
 
 	out, _ := runShellSilent(`docker ps --format '{{.Names}}' | grep "^remnawave_bot$"`)
 	if out != "" {
-		fmt.Println(dimStyle.Render("  Статус:   ") + successStyle.Render("● Работает"))
+		fmt.Println(ui.DimStyle.Render("  Статус:   ") + ui.SuccessStyle.Render("● Работает"))
 	} else {
-		fmt.Println(dimStyle.Render("  Статус:   ") + errorStyle.Render("○ Остановлен"))
+		fmt.Println(ui.DimStyle.Render("  Статус:   ") + ui.ErrorStyle.Render("○ Остановлен"))
 	}
 	fmt.Println()
 }
 
 func waitForEnter() {
 	fmt.Println()
-	fmt.Print(dimStyle.Render("  Нажмите Enter для продолжения..."))
+	fmt.Print(ui.DimStyle.Render("  Нажмите Enter для продолжения..."))
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 }
 
@@ -123,7 +125,7 @@ func waitForEnter() {
 // ════════════════════════════════════════════════════════════════
 
 func manageLogs(installDir, composeFile string) {
-	printInfo("Логи бота (Ctrl+C для выхода)...")
+	ui.PrintInfo("Логи бота (Ctrl+C для выхода)...")
 	fmt.Println()
 	allowExit = true
 	runShell(fmt.Sprintf("cd %s && docker compose -f %s logs -f --tail=150 bot", installDir, composeFile))
@@ -135,10 +137,10 @@ func manageLogs(installDir, composeFile string) {
 // ════════════════════════════════════════════════════════════════
 
 func manageStatus(installDir, composeFile string) {
-	sep := dimStyle.Render("  ─────────────────────────────────────────────────────")
+	sep := ui.DimStyle.Render("  ─────────────────────────────────────────────────────")
 
 	fmt.Println()
-	fmt.Println(highlightStyle.Render("  Контейнеры"))
+	fmt.Println(ui.HighlightStyle.Render("  Контейнеры"))
 	fmt.Println(sep)
 	out, _ := runShellSilent(fmt.Sprintf("cd %s && docker compose -f %s ps --format 'table {{.Name}}\\t{{.Status}}\\t{{.Ports}}' 2>/dev/null", installDir, composeFile))
 	if out != "" {
@@ -146,15 +148,15 @@ func manageStatus(installDir, composeFile string) {
 			if strings.Contains(strings.ToLower(line), "up") || strings.Contains(line, "NAME") {
 				fmt.Println("  " + line)
 			} else {
-				fmt.Println(errorStyle.Render("  " + line))
+				fmt.Println(ui.ErrorStyle.Render("  " + line))
 			}
 		}
 	} else {
-		fmt.Println(dimStyle.Render("  Контейнеры не найдены"))
+		fmt.Println(ui.DimStyle.Render("  Контейнеры не найдены"))
 	}
 
 	fmt.Println()
-	fmt.Println(highlightStyle.Render("  Ресурсы"))
+	fmt.Println(ui.HighlightStyle.Render("  Ресурсы"))
 	fmt.Println(sep)
 	out, _ = runShellSilent(`docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}" 2>/dev/null | grep -E "remnawave|postgres|redis|NAME"`)
 	if out != "" {
@@ -162,11 +164,11 @@ func manageStatus(installDir, composeFile string) {
 			fmt.Println("  " + line)
 		}
 	} else {
-		fmt.Println(dimStyle.Render("  Нет данных"))
+		fmt.Println(ui.DimStyle.Render("  Нет данных"))
 	}
 
 	fmt.Println()
-	fmt.Println(highlightStyle.Render("  Диск"))
+	fmt.Println(ui.HighlightStyle.Render("  Диск"))
 	fmt.Println(sep)
 	out, _ = runShellSilent(`docker system df --format "table {{.Type}}\t{{.TotalCount}}\t{{.Size}}\t{{.Reclaimable}}" 2>/dev/null`)
 	if out != "" {
@@ -181,30 +183,30 @@ func manageStatus(installDir, composeFile string) {
 // ════════════════════════════════════════════════════════════════
 
 func manageRestart(installDir, composeFile string) {
-	runWithSpinner("Перезапуск контейнеров...", func() error {
+	ui.RunWithSpinner("Перезапуск контейнеров...", func() error {
 		_, err := runShellSilent(fmt.Sprintf("cd %s && docker compose -f %s restart", installDir, composeFile))
 		return err
 	})
-	printSuccess("Контейнеры перезапущены")
+	ui.PrintSuccess("Контейнеры перезапущены")
 }
 
 func manageStart(installDir, composeFile string) {
-	runWithSpinner("Запуск контейнеров...", func() error {
+	ui.RunWithSpinner("Запуск контейнеров...", func() error {
 		_, err := runShellSilent(fmt.Sprintf("cd %s && docker compose -f %s up -d", installDir, composeFile))
 		return err
 	})
-	printSuccess("Контейнеры запущены")
+	ui.PrintSuccess("Контейнеры запущены")
 }
 
 func manageStop(installDir, composeFile string) {
-	if !confirmPrompt("Остановить все контейнеры?", true) {
+	if !ui.ConfirmPrompt("Остановить все контейнеры?", true) {
 		return
 	}
-	runWithSpinner("Остановка контейнеров...", func() error {
+	ui.RunWithSpinner("Остановка контейнеров...", func() error {
 		_, err := runShellSilent(fmt.Sprintf("cd %s && docker compose -f %s down", installDir, composeFile))
 		return err
 	})
-	printSuccess("Контейнеры остановлены")
+	ui.PrintSuccess("Контейнеры остановлены")
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -212,27 +214,24 @@ func manageStop(installDir, composeFile string) {
 // ════════════════════════════════════════════════════════════════
 
 func manageUpdate(installDir, composeFile string) {
-	if !confirmPrompt("Начать обновление бота?", true) {
+	if !ui.ConfirmPrompt("Начать обновление бота?", true) {
 		return
 	}
 
-	// Backup .env
 	runShellSilent(fmt.Sprintf(`cd %s && cp .env ".env.backup_$(date +%%Y%%m%%d_%%H%%M%%S)" 2>/dev/null || true`, installDir))
-	printSuccess("Резервная копия .env создана")
+	ui.PrintSuccess("Резервная копия .env создана")
 
-	// Git pull
-	runWithSpinner("Загрузка обновлений...", func() error {
+	ui.RunWithSpinner("Загрузка обновлений...", func() error {
 		_, err := runShellSilent(fmt.Sprintf("cd %s && git pull origin main", installDir))
 		return err
 	})
 
-	// Rebuild
-	runWithSpinner("Пересборка контейнеров...", func() error {
+	ui.RunWithSpinner("Пересборка контейнеров...", func() error {
 		_, err := runShellSilent(fmt.Sprintf("cd %s && docker compose -f %s down && docker compose -f %s up -d --build", installDir, composeFile, composeFile))
 		return err
 	})
 
-	printSuccess("Обновление завершено")
+	ui.PrintSuccess("Обновление завершено")
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -246,25 +245,21 @@ func manageBackup(installDir, composeFile string) {
 
 	fmt.Println()
 
-	// Database
-	runWithSpinner("Бэкап базы данных...", func() error {
+	ui.RunWithSpinner("Бэкап базы данных...", func() error {
 		_, err := runShellSilent(fmt.Sprintf("cd %s && docker compose -f %s exec -T postgres pg_dump -U remnawave_user remnawave_bot > %s/database.sql 2>/dev/null", installDir, composeFile, backupDir))
 		return err
 	})
 
-	// Config files
 	runShellSilent(fmt.Sprintf("cp %s/.env %s/.env 2>/dev/null", installDir, backupDir))
 	runShellSilent(fmt.Sprintf("cp %s/docker-compose*.yml %s/ 2>/dev/null", installDir, backupDir))
 
-	printSuccess("Бэкап создан: " + backupDir)
+	ui.PrintSuccess("Бэкап создан: " + backupDir)
 
-	// Cleanup old backups (keep 5)
 	runShellSilent(fmt.Sprintf(`ls -dt "%s/data/backups"/*/ 2>/dev/null | tail -n +6 | xargs -r rm -rf`, installDir))
 
-	// Show backup size
 	out, _ := runShellSilent(fmt.Sprintf("du -sh %s 2>/dev/null | awk '{print $1}'", backupDir))
 	if out != "" {
-		printInfo("Размер: " + out)
+		ui.PrintInfo("Размер: " + out)
 	}
 }
 
@@ -273,58 +268,52 @@ func manageBackup(installDir, composeFile string) {
 // ════════════════════════════════════════════════════════════════
 
 func manageHealth(installDir, composeFile string) {
-	sep := dimStyle.Render("  ─────────────────────────────────────────────────────")
+	sep := ui.DimStyle.Render("  ─────────────────────────────────────────────────────")
 
 	fmt.Println()
-	fmt.Println(accentBar.Render("  ДИАГНОСТИКА СИСТЕМЫ"))
+	fmt.Println(ui.AccentBar.Render("  ДИАГНОСТИКА СИСТЕМЫ"))
 	fmt.Println(sep)
 	fmt.Println()
 
-	// Bot container
 	out, _ := runShellSilent(`docker ps --format '{{.Names}}' | grep "^remnawave_bot$"`)
 	if out != "" {
-		printSuccess("Бот: работает")
+		ui.PrintSuccess("Бот: работает")
 	} else {
-		printError("Бот: не запущен")
+		ui.PrintError("Бот: не запущен")
 	}
 
-	// PostgreSQL
 	_, err := runShellSilent(fmt.Sprintf("cd %s && docker compose -f %s exec -T postgres pg_isready -U remnawave_user 2>/dev/null", installDir, composeFile))
 	if err == nil {
-		printSuccess("PostgreSQL: работает")
+		ui.PrintSuccess("PostgreSQL: работает")
 	} else {
-		printError("PostgreSQL: не доступен")
+		ui.PrintError("PostgreSQL: не доступен")
 	}
 
-	// Redis
 	_, err = runShellSilent(fmt.Sprintf("cd %s && docker compose -f %s exec -T redis redis-cli ping 2>/dev/null", installDir, composeFile))
 	if err == nil {
-		printSuccess("Redis: работает")
+		ui.PrintSuccess("Redis: работает")
 	} else {
-		printError("Redis: не доступен")
+		ui.PrintError("Redis: не доступен")
 	}
 
-	// Docker
 	if commandExists("docker") {
-		printSuccess("Docker: установлен")
+		ui.PrintSuccess("Docker: установлен")
 	} else {
-		printError("Docker: не найден")
+		ui.PrintError("Docker: не найден")
 	}
 
-	// Disk space
 	out, _ = runShellSilent("df -h / | tail -1 | awk '{print $4}'")
 	if out != "" {
-		printInfo("Свободно на диске: " + out)
+		ui.PrintInfo("Свободно на диске: " + out)
 	}
 
-	// Memory
 	out, _ = runShellSilent("free -h | grep Mem | awk '{printf \"%s / %s\", $3, $2}'")
 	if out != "" {
-		printInfo("Память: " + out)
+		ui.PrintInfo("Память: " + out)
 	}
 
 	fmt.Println()
-	fmt.Println(dimStyle.Render("  Последние логи:"))
+	fmt.Println(ui.DimStyle.Render("  Последние логи:"))
 	fmt.Println(sep)
 	runShell(fmt.Sprintf("cd %s && docker compose -f %s logs --tail=10 bot 2>/dev/null", installDir, composeFile))
 }
@@ -336,7 +325,7 @@ func manageHealth(installDir, composeFile string) {
 func manageConfig(installDir string) {
 	envPath := filepath.Join(installDir, ".env")
 	if !fileExists(envPath) {
-		printError("Файл .env не найден: " + envPath)
+		ui.PrintError("Файл .env не найден: " + envPath)
 		return
 	}
 
@@ -352,7 +341,7 @@ func manageConfig(installDir string) {
 	cmd.Run()
 
 	fmt.Println()
-	printWarning("Перезапустите бота для применения изменений: bot restart")
+	ui.PrintWarning("Перезапустите бота для применения изменений: bot restart")
 	waitForEnter()
 }
 
@@ -362,33 +351,32 @@ func manageConfig(installDir string) {
 
 func manageUninstall(installDir, composeFile string) {
 	fmt.Println()
-	fmt.Println(errorStyle.Render("  ╔══════════════════════════════════╗"))
-	fmt.Println(errorStyle.Render("  ║         УДАЛЕНИЕ БОТА            ║"))
-	fmt.Println(errorStyle.Render("  ╚══════════════════════════════════╝"))
+	fmt.Println(ui.ErrorStyle.Render("  ╔══════════════════════════════════╗"))
+	fmt.Println(ui.ErrorStyle.Render("  ║         УДАЛЕНИЕ БОТА            ║"))
+	fmt.Println(ui.ErrorStyle.Render("  ╚══════════════════════════════════╝"))
 	fmt.Println()
 
-	if !confirmPrompt("Вы уверены, что хотите удалить бота?", false) {
-		printSuccess("Отменено")
+	if !ui.ConfirmPrompt("Вы уверены, что хотите удалить бота?", false) {
+		ui.PrintSuccess("Отменено")
 		return
 	}
 
-	val := inputText("Введите 'yes' для подтверждения", "", "Это действие нельзя отменить", true)
+	val := ui.InputText("Введите 'yes' для подтверждения", "", "Это действие нельзя отменить", true)
 	if val != "yes" {
-		printSuccess("Отменено")
+		ui.PrintSuccess("Отменено")
 		return
 	}
 
-	if confirmPrompt("Создать резервную копию перед удалением?", true) {
+	if ui.ConfirmPrompt("Создать резервную копию перед удалением?", true) {
 		runShellSilent(fmt.Sprintf(`cd %s && tar -czf "/root/bedolaga_backup_$(date +%%Y%%m%%d_%%H%%M%%S).tar.gz" .env data/ 2>/dev/null || true`, installDir))
-		printSuccess("Резервная копия сохранена в /root/")
+		ui.PrintSuccess("Резервная копия сохранена в /root/")
 	}
 
-	runWithSpinner("Остановка контейнеров...", func() error {
+	ui.RunWithSpinner("Остановка контейнеров...", func() error {
 		runShellSilent(fmt.Sprintf("cd %s && docker compose -f %s down -v 2>/dev/null || true", installDir, composeFile))
 		return nil
 	})
 
-	// Cleanup reverse proxy
 	runShellSilent("rm -f /etc/nginx/sites-enabled/bedolaga-* /etc/nginx/sites-available/bedolaga-*")
 	runShellSilent("nginx -t 2>/dev/null && systemctl reload nginx 2>/dev/null || true")
 	if fileExists("/etc/caddy/Caddyfile") {
@@ -398,14 +386,14 @@ func manageUninstall(installDir, composeFile string) {
 
 	os.Remove("/usr/local/bin/bot")
 
-	if confirmPrompt("Удалить каталог "+installDir+"?", false) {
+	if ui.ConfirmPrompt("Удалить каталог "+installDir+"?", false) {
 		os.RemoveAll(installDir)
-		printSuccess("Каталог удалён")
+		ui.PrintSuccess("Каталог удалён")
 	} else {
-		printInfo("Каталог сохранён: " + installDir)
+		ui.PrintInfo("Каталог сохранён: " + installDir)
 	}
 
-	printSuccessBox(successStyle.Render("Удаление завершено!"))
+	ui.PrintSuccessBox(ui.SuccessStyle.Render("Удаление завершено!"))
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -437,7 +425,7 @@ func manageSubcommand(subcmd, installDir, composeFile string) {
 	case "help", "--help", "-h":
 		printManageHelp()
 	default:
-		printError("Неизвестная команда: " + subcmd)
+		ui.PrintError("Неизвестная команда: " + subcmd)
 		fmt.Println()
 		printManageHelp()
 		os.Exit(1)
@@ -445,21 +433,21 @@ func manageSubcommand(subcmd, installDir, composeFile string) {
 }
 
 func printManageHelp() {
-	printBanner()
-	fmt.Println(highlightStyle.Render("  Использование:") + dimStyle.Render(" bot [команда]"))
+	ui.PrintBanner(appVersion)
+	fmt.Println(ui.HighlightStyle.Render("  Использование:") + ui.DimStyle.Render(" bot [команда]"))
 	fmt.Println()
-	fmt.Println(dimStyle.Render("  (без аргументов)  ") + "Интерактивное меню со стрелками")
+	fmt.Println(ui.DimStyle.Render("  (без аргументов)  ") + "Интерактивное меню со стрелками")
 	fmt.Println()
-	fmt.Println(infoStyle.Render("  logs            ") + "  Просмотр логов")
-	fmt.Println(infoStyle.Render("  status          ") + "  Статус контейнеров и ресурсы")
-	fmt.Println(infoStyle.Render("  restart         ") + "  Перезапуск контейнеров")
-	fmt.Println(infoStyle.Render("  start           ") + "  Запуск контейнеров")
-	fmt.Println(infoStyle.Render("  stop            ") + "  Остановка контейнеров")
-	fmt.Println(infoStyle.Render("  update          ") + "  Обновление (git pull + rebuild)")
-	fmt.Println(infoStyle.Render("  backup          ") + "  Создать резервную копию")
-	fmt.Println(infoStyle.Render("  health          ") + "  Диагностика системы")
-	fmt.Println(infoStyle.Render("  config          ") + "  Редактировать .env")
-	fmt.Println(infoStyle.Render("  uninstall       ") + "  Удалить бота")
-	fmt.Println(infoStyle.Render("  help            ") + "  Эта справка")
+	fmt.Println(ui.InfoStyle.Render("  logs            ") + "  Просмотр логов")
+	fmt.Println(ui.InfoStyle.Render("  status          ") + "  Статус контейнеров и ресурсы")
+	fmt.Println(ui.InfoStyle.Render("  restart         ") + "  Перезапуск контейнеров")
+	fmt.Println(ui.InfoStyle.Render("  start           ") + "  Запуск контейнеров")
+	fmt.Println(ui.InfoStyle.Render("  stop            ") + "  Остановка контейнеров")
+	fmt.Println(ui.InfoStyle.Render("  update          ") + "  Обновление (git pull + rebuild)")
+	fmt.Println(ui.InfoStyle.Render("  backup          ") + "  Создать резервную копию")
+	fmt.Println(ui.InfoStyle.Render("  health          ") + "  Диагностика системы")
+	fmt.Println(ui.InfoStyle.Render("  config          ") + "  Редактировать .env")
+	fmt.Println(ui.InfoStyle.Render("  uninstall       ") + "  Удалить бота")
+	fmt.Println(ui.InfoStyle.Render("  help            ") + "  Эта справка")
 	fmt.Println()
 }

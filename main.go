@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"bedolaga-installer/pkg/ui"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -20,7 +22,6 @@ const repoURL = "https://github.com/BEDOLAGA-DEV/remnawave-bedolaga-telegram-bot
 // ════════════════════════════════════════════════════════════════
 
 func main() {
-	// Переходим в существующую директорию чтобы избежать ошибок getcwd
 	os.Chdir("/root")
 
 	setupSignalHandler()
@@ -40,20 +41,20 @@ func main() {
 	case "uninstall", "remove":
 		uninstallBot()
 	case "version", "--version", "-v":
-		fmt.Println(lipgloss.NewStyle().Foreground(colorAccent).Bold(true).Render("bedolaga_installer") + " " + dimStyle.Render("v"+appVersion))
+		fmt.Println(lipgloss.NewStyle().Foreground(ui.ColorAccent).Bold(true).Render("bedolaga_installer") + " " + ui.DimStyle.Render("v"+appVersion))
 	case "help", "--help", "-h":
-		printBanner()
-		fmt.Println(highlightStyle.Render("  Команды:"))
-		fmt.Println(dimStyle.Render("    install    ") + "Запустить мастер установки")
-		fmt.Println(dimStyle.Render("    manage     ") + "Панель управления ботом (TUI)")
-		fmt.Println(dimStyle.Render("    update     ") + "Обновить бота (git pull + пересборка)")
-		fmt.Println(dimStyle.Render("    uninstall  ") + "Удалить бота")
-		fmt.Println(dimStyle.Render("    version    ") + "Показать версию")
-		fmt.Println(dimStyle.Render("    help       ") + "Показать эту справку")
+		ui.PrintBanner(appVersion)
+		fmt.Println(ui.HighlightStyle.Render("  Команды:"))
+		fmt.Println(ui.DimStyle.Render("    install    ") + "Запустить мастер установки")
+		fmt.Println(ui.DimStyle.Render("    manage     ") + "Панель управления ботом (TUI)")
+		fmt.Println(ui.DimStyle.Render("    update     ") + "Обновить бота (git pull + пересборка)")
+		fmt.Println(ui.DimStyle.Render("    uninstall  ") + "Удалить бота")
+		fmt.Println(ui.DimStyle.Render("    version    ") + "Показать версию")
+		fmt.Println(ui.DimStyle.Render("    help       ") + "Показать эту справку")
 		fmt.Println()
 	default:
-		printError("Неизвестная команда: " + os.Args[1])
-		fmt.Println(dimStyle.Render("  Используйте: bedolaga_installer help"))
+		ui.PrintError("Неизвестная команда: " + os.Args[1])
+		fmt.Println(ui.DimStyle.Render("  Используйте: bedolaga_installer help"))
 		os.Exit(1)
 	}
 }

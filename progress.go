@@ -8,6 +8,8 @@ import (
 	"strings"
 	"syscall"
 
+	"bedolaga-installer/pkg/ui"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -20,13 +22,13 @@ type installProgress struct {
 	total    int
 	steps    []string
 	lastLine string
-	silent   bool // Подавлять промежуточный вывод
+	silent   bool
 }
 
 var globalProgress = installProgress{
 	current: 0,
 	total:   12,
-	silent:  true, // Лайв-режим по умолчанию
+	silent:  true,
 	steps: []string{
 		"Проверка системы",
 		"Установка пакетов",
@@ -49,57 +51,49 @@ func (p *installProgress) advance(stepName string) {
 
 	barWidth := 40
 	filled := int(pct * float64(barWidth))
-	bar := lipgloss.NewStyle().Foreground(colorAccent).Render(strings.Repeat("━", filled))
-	empty := lipgloss.NewStyle().Foreground(colorDim).Render(strings.Repeat("━", barWidth-filled))
-	pctStr := lipgloss.NewStyle().Foreground(colorAccent).Bold(true).Render(fmt.Sprintf("%3d%%", int(pct*100)))
+	bar := lipgloss.NewStyle().Foreground(ui.ColorAccent).Render(strings.Repeat("━", filled))
+	empty := lipgloss.NewStyle().Foreground(ui.ColorDim).Render(strings.Repeat("━", barWidth-filled))
+	pctStr := lipgloss.NewStyle().Foreground(ui.ColorAccent).Bold(true).Render(fmt.Sprintf("%3d%%", int(pct*100)))
 
-	stepLabel := lipgloss.NewStyle().Foreground(colorWhite).Bold(true).Render(stepName)
-	counter := dimStyle.Render(fmt.Sprintf("[%2d/%d]", p.current, p.total))
+	stepLabel := lipgloss.NewStyle().Foreground(ui.ColorWhite).Bold(true).Render(stepName)
+	counter := ui.DimStyle.Render(fmt.Sprintf("[%2d/%d]", p.current, p.total))
 
-	p.lastLine = fmt.Sprintf("  %s %s%s %s  %s %s", counter, bar, empty, pctStr, accentBar.Render("▸"), stepLabel)
+	p.lastLine = fmt.Sprintf("  %s %s%s %s  %s %s", counter, bar, empty, pctStr, ui.AccentBar.Render("▸"), stepLabel)
 
-	// Очищаем строку и печатаем прогресс на той же позиции (ANSI escape: \033[K)
 	fmt.Printf("\r\033[K%s", p.lastLine)
 
-	// Переход на новую строку только в конце
 	if p.current == p.total {
 		fmt.Println()
 	}
 }
 
-// Показать сообщение над прогресс-баром
 func (p *installProgress) log(msg string) {
 	if p.silent {
 		return
 	}
-	// Очистить текущую строку, напечатать сообщение, затем прогресс снова
 	fmt.Printf("\r\033[K%s\n", msg)
 	if p.lastLine != "" {
 		fmt.Printf("%s", p.lastLine)
 	}
 }
 
-// Показать финальный статус этапа (всегда показывается)
 func (p *installProgress) done(msg string) {
-	fmt.Printf("\r\033[K%s\n", successStyle.Render("  ✓ "+msg))
+	fmt.Printf("\r\033[K%s\n", ui.SuccessStyle.Render("  ✓ "+msg))
 	if p.lastLine != "" && p.current < p.total {
 		fmt.Printf("%s", p.lastLine)
 	}
 }
 
-// Показать ошибку (всегда показывается)
 func (p *installProgress) fail(msg string) {
-	fmt.Printf("\r\033[K%s\n", errorStyle.Render("  ✗ "+msg))
+	fmt.Printf("\r\033[K%s\n", ui.ErrorStyle.Render("  ✗ "+msg))
 }
 
-// Показать предупреждение (всегда показывается)
 func (p *installProgress) warn(msg string) {
-	fmt.Printf("\r\033[K%s\n", warnStyle.Render("  ⚠ "+msg))
+	fmt.Printf("\r\033[K%s\n", ui.WarnStyle.Render("  ⚠ "+msg))
 }
 
-// Показать инфо (всегда показывается)
 func (p *installProgress) info(msg string) {
-	fmt.Printf("\r\033[K%s\n", infoStyle.Render("  ℹ "+msg))
+	fmt.Printf("\r\033[K%s\n", ui.InfoStyle.Render("  ℹ "+msg))
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -119,18 +113,18 @@ func setupSignalHandler() {
 			}
 			fmt.Println()
 			fmt.Println()
-			msg := warnStyle.Render("  ⚠  Обнаружено Ctrl+C!")
+			msg := ui.WarnStyle.Render("  ⚠  Обнаружено Ctrl+C!")
 			fmt.Println(msg)
-			fmt.Println(dimStyle.Render("  Установка в процессе. Выход сейчас может оставить систему в нестабильном состоянии."))
+			fmt.Println(ui.DimStyle.Render("  Установка в процессе. Выход сейчас может оставить систему в нестабильном состоянии."))
 			fmt.Println()
-			fmt.Print(promptStyle.Render("  Точно выйти? ") + dimStyle.Render("(введите 'yes' для подтверждения): "))
+			fmt.Print(ui.PromptStyle.Render("  Точно выйти? ") + ui.DimStyle.Render("(введите 'yes' для подтверждения): "))
 			reader := bufio.NewReader(os.Stdin)
 			line, _ := reader.ReadString('\n')
 			if strings.TrimSpace(strings.ToLower(line)) == "yes" {
-				fmt.Println(dimStyle.Render("  Выход..."))
+				fmt.Println(ui.DimStyle.Render("  Выход..."))
 				os.Exit(1)
 			}
-			fmt.Println(successStyle.Render("  ✓ Продолжаем установку..."))
+			fmt.Println(ui.SuccessStyle.Render("  ✓ Продолжаем установку..."))
 			fmt.Println()
 		}
 	}()

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"bedolaga-installer/pkg/ui"
 )
 
 // ════════════════════════════════════════════════════════════════
@@ -11,17 +13,17 @@ import (
 // ════════════════════════════════════════════════════════════════
 
 func installWizard() {
-	printBanner()
+	ui.PrintBanner(appVersion)
 	checkRoot()
 
-	printBox("📋 Перед началом",
-		infoStyle.Render("Убедитесь, что у вас есть:")+"\n\n"+
-			highlightStyle.Render("  1. ")+"BOT_TOKEN от @BotFather\n"+
-			highlightStyle.Render("  2. ")+"Ваш Telegram ID (от @userinfobot)\n"+
-			highlightStyle.Render("  3. ")+"REMNAWAVE_API_KEY из настроек панели\n"+
-			highlightStyle.Render("  4. ")+"DNS-записи для доменов (опционально)")
+	ui.PrintBox("📋 Перед началом",
+		ui.InfoStyle.Render("Убедитесь, что у вас есть:")+"\n\n"+
+			ui.HighlightStyle.Render("  1. ")+"BOT_TOKEN от @BotFather\n"+
+			ui.HighlightStyle.Render("  2. ")+"Ваш Telegram ID (от @userinfobot)\n"+
+			ui.HighlightStyle.Render("  3. ")+"REMNAWAVE_API_KEY из настроек панели\n"+
+			ui.HighlightStyle.Render("  4. ")+"DNS-записи для доменов (опционально)")
 
-	if !confirmPrompt("Начать установку?", true) {
+	if !ui.ConfirmPrompt("Начать установку?", true) {
 		os.Exit(0)
 	}
 
@@ -87,9 +89,8 @@ func installWizard() {
 	createManagementScript(cfg)
 	printFinalInfo(cfg)
 
-	// Спросить о логах только в интерактивном режиме
-	if isInteractive() {
-		if confirmPrompt("Показать логи бота?", false) {
+	if ui.IsInteractive() {
+		if ui.ConfirmPrompt("Показать логи бота?", false) {
 			composeFile := "docker-compose.yml"
 			if cfg.PanelInstalledLocally {
 				composeFile = "docker-compose.local.yml"
@@ -126,52 +127,52 @@ func detectComposeFile(installDir string) string {
 }
 
 func updateBot() {
-	printBanner()
+	ui.PrintBanner(appVersion)
 	installDir := findInstallDir()
 	if installDir == "" {
-		printErrorBox(errorStyle.Render("Установка бота не найдена!"))
+		ui.PrintErrorBox(ui.ErrorStyle.Render("Установка бота не найдена!"))
 		os.Exit(1)
 	}
 	composeFile := detectComposeFile(installDir)
-	printInfo("Каталог: " + installDir)
+	ui.PrintInfo("Каталог: " + installDir)
 
-	if !confirmPrompt("Начать обновление?", true) {
+	if !ui.ConfirmPrompt("Начать обновление?", true) {
 		os.Exit(0)
 	}
 
 	runShellSilent(fmt.Sprintf(`cd %s && cp .env ".env.backup_$(date +%%Y%%m%%d_%%H%%M%%S)" 2>/dev/null || true`, installDir))
 
-	runWithSpinner("Загрузка последнего кода...", func() error {
+	ui.RunWithSpinner("Загрузка последнего кода...", func() error {
 		_, err := runShellSilent(fmt.Sprintf("cd %s && git pull origin main", installDir))
 		return err
 	})
 
-	printInfo("Пересборка и перезапуск...")
+	ui.PrintInfo("Пересборка и перезапуск...")
 	runShell(fmt.Sprintf("cd %s && docker compose -f %s down && docker compose -f %s up -d --build && docker compose -f %s logs -f -t", installDir, composeFile, composeFile, composeFile))
 }
 
 func uninstallBot() {
-	printBanner()
+	ui.PrintBanner(appVersion)
 	installDir := findInstallDir()
 	if installDir == "" {
-		printErrorBox(errorStyle.Render("Бот не установлен!"))
+		ui.PrintErrorBox(ui.ErrorStyle.Render("Бот не установлен!"))
 		os.Exit(1)
 	}
 	composeFile := detectComposeFile(installDir)
-	printInfo("Каталог: " + installDir)
+	ui.PrintInfo("Каталог: " + installDir)
 
-	val := inputText("Введите 'yes' для подтверждения удаления", "", "Это остановит и удалит контейнеры бота", true)
+	val := ui.InputText("Введите 'yes' для подтверждения удаления", "", "Это остановит и удалит контейнеры бота", true)
 	if val != "yes" {
-		printSuccess("Отменено")
+		ui.PrintSuccess("Отменено")
 		return
 	}
 
-	if confirmPrompt("Создать резервную копию сначала?", true) {
+	if ui.ConfirmPrompt("Создать резервную копию сначала?", true) {
 		runShellSilent(fmt.Sprintf(`cd %s && tar -czf "/root/bedolaga_backup_$(date +%%Y%%m%%d_%%H%%M%%S).tar.gz" .env data/ 2>/dev/null || true`, installDir))
-		printSuccess("Резервная копия сохранена в /root/")
+		ui.PrintSuccess("Резервная копия сохранена в /root/")
 	}
 
-	runWithSpinner("Остановка контейнеров...", func() error {
+	ui.RunWithSpinner("Остановка контейнеров...", func() error {
 		runShellSilent(fmt.Sprintf("cd %s && docker compose -f %s down -v 2>/dev/null || docker compose down -v 2>/dev/null || true", installDir, composeFile))
 		return nil
 	})
@@ -185,9 +186,9 @@ func uninstallBot() {
 	}
 	os.Remove("/usr/local/bin/bot")
 
-	if confirmPrompt("Удалить каталог "+installDir+"?", false) {
+	if ui.ConfirmPrompt("Удалить каталог "+installDir+"?", false) {
 		os.RemoveAll(installDir)
 	}
 
-	printSuccessBox(successStyle.Render("Удаление завершено!"))
+	ui.PrintSuccessBox(ui.SuccessStyle.Render("Удаление завершено!"))
 }
