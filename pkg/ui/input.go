@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -14,6 +15,8 @@ import (
 // INTERACTIVE TEXT INPUT
 // ════════════════════════════════════════════════════════════════
 
+type inputReadyMsg struct{}
+
 type inputModel struct {
 	input    textinput.Model
 	label    string
@@ -21,6 +24,7 @@ type inputModel struct {
 	done     bool
 	required bool
 	errMsg   string
+	ready    bool
 }
 
 func newInputModel(label, placeholder, hint string, required bool) inputModel {
@@ -42,11 +46,24 @@ func newInputModel(label, placeholder, hint string, required bool) inputModel {
 	}
 }
 
-func (m inputModel) Init() tea.Cmd { return textinput.Blink }
+func (m inputModel) Init() tea.Cmd {
+	return tea.Batch(
+		textinput.Blink,
+		tea.Tick(150*time.Millisecond, func(t time.Time) tea.Msg {
+			return inputReadyMsg{}
+		}),
+	)
+}
 
 func (m inputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case inputReadyMsg:
+		m.ready = true
+		return m, nil
 	case tea.KeyMsg:
+		if !m.ready {
+			return m, nil
+		}
 		switch msg.String() {
 		case "enter":
 			val := strings.TrimSpace(m.input.Value())

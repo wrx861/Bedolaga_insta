@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -11,17 +12,30 @@ import (
 // CONFIRM DIALOG
 // ════════════════════════════════════════════════════════════════
 
+type confirmReadyMsg struct{}
+
 type confirmModel struct {
 	prompt   string
 	selected bool // true = yes
 	done     bool
+	ready    bool
 }
 
-func (m confirmModel) Init() tea.Cmd { return nil }
+func (m confirmModel) Init() tea.Cmd {
+	return tea.Tick(150*time.Millisecond, func(t time.Time) tea.Msg {
+		return confirmReadyMsg{}
+	})
+}
 
 func (m confirmModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case confirmReadyMsg:
+		m.ready = true
+		return m, nil
 	case tea.KeyMsg:
+		if !m.ready {
+			return m, nil
+		}
 		switch msg.String() {
 		case "left", "h", "tab":
 			m.selected = !m.selected
