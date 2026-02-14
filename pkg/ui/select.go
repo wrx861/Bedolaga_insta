@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -19,14 +20,13 @@ type SelectItem struct {
 
 func (i SelectItem) FilterValue() string { return i.Title }
 
-type selectDelegate struct {
-	list.DefaultDelegate
-}
+type selectReadyMsg struct{}
 
 type selectModel struct {
 	list     list.Model
 	selected int
 	done     bool
+	ready    bool // ignores input until ready (prevents Enter leak)
 }
 
 // Implement list.Item interface via wrapper
@@ -71,11 +71,22 @@ func newSelectModel(title string, items []SelectItem) selectModel {
 	return selectModel{list: l, selected: -1}
 }
 
-func (m selectModel) Init() tea.Cmd { return nil }
+func (m selectModel) Init() tea.Cmd {
+	// Warmup delay: ignore leaked keypresses from previous bubbletea program
+	return tea.Tick(150*time.Millisecond, func(t time.Time) tea.Msg {
+		return selectReadyMsg{}
+	})
+}
 
 func (m selectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case selectReadyMsg:
+		m.ready = true
+		return m, nil
 	case tea.KeyMsg:
+		if !m.ready {
+			return m, nil // ignore stale keypresses
+		}
 		switch msg.String() {
 		case "enter":
 			m.selected = m.list.Index()
