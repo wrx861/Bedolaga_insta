@@ -129,5 +129,5 @@ echo
 echo -e "${D}  ─────────────────────────────────────────────${NC}"
 echo
 
-# Запуск установщика
-exec "$INSTALL_PATH" install
+# Запуск установщика (stdin из терминала, не из пайпа curl)
+exec "$INSTALL_PATH" install < /dev/tty
