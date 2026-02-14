@@ -1302,21 +1302,19 @@ func interactiveSetup(cfg *Config) {
 
 func cloneRepository(cfg *Config) {
 	if dirExists(cfg.InstallDir) {
-		printWarning("Каталог " + cfg.InstallDir + " уже существует")
-		if confirmPrompt("Удалить и клонировать заново?", false) {
-			os.RemoveAll(cfg.InstallDir)
-		} else {
-			printInfo("Используем существующий каталог, обновляем...")
-			runShellSilent(fmt.Sprintf("cd %s && git pull origin main || true", cfg.InstallDir))
-			return
-		}
+		// Обновляем существующий
+		runShellSilent(fmt.Sprintf("cd %s && git pull origin main 2>/dev/null || true", cfg.InstallDir))
+		globalProgress.done("Репозиторий обновлён")
+		return
 	}
 
-	runWithSpinner("Клонирование репозитория...", func() error {
-		_, err := runCmdSilent("git", "clone", repoURL, cfg.InstallDir)
-		return err
-	})
-	printSuccess("Клонировано в " + cfg.InstallDir)
+	// Клонируем новый
+	_, err := runCmdSilent("git", "clone", repoURL, cfg.InstallDir)
+	if err != nil {
+		globalProgress.fail("Ошибка клонирования: " + err.Error())
+		os.Exit(1)
+	}
+	globalProgress.done("Репозиторий клонирован")
 }
 
 func createDirectories(cfg *Config) {
