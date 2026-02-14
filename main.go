@@ -1082,23 +1082,12 @@ func detectPanelNetwork(cfg *Config) {
 	}
 
 	if found {
-		printSuccess("Docker-сеть: " + highlightStyle.Render(cfg.DockerNetwork))
+		globalProgress.done("Docker-сеть: " + cfg.DockerNetwork)
 	} else {
-		printWarning("Автоопределение не удалось")
-		nets, _ := runShellSilent(`docker network ls --format '{{.Name}}' | grep -v "bridge\|host\|none"`)
-		if nets != "" {
-			printInfo("Доступные сети:")
-			for _, n := range strings.Split(nets, "\n") {
-				n = strings.TrimSpace(n)
-				if n != "" {
-					printDim("• " + n)
-				}
-			}
-		}
-		manual := inputText("Имя Docker-сети", "remnawave-network", "Оставьте пустым для пропуска", false)
-		if manual != "" {
-			cfg.DockerNetwork = manual
-		}
+		globalProgress.warn("Docker-сеть не найдена автоматически")
+		// Используем дефолтную сеть
+		cfg.DockerNetwork = "remnawave-network"
+		globalProgress.info("Используется сеть по умолчанию: " + cfg.DockerNetwork)
 	}
 }
 
