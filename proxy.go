@@ -248,6 +248,7 @@ func createCaddyCompose(cfg *Config) {
       - %s/miniapp:/srv/miniapp:ro`, cfg.InstallDir)
 	}
 
+	// Caddy нужен доступ к интернету (для Let's Encrypt) + к сети бота
 	content := fmt.Sprintf(`services:
   caddy:
     image: caddy:2-alpine
@@ -263,6 +264,10 @@ func createCaddyCompose(cfg *Config) {
       - caddy_config:/config%s
     networks:
       - bot_network
+      - default
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
 
 volumes:
   caddy_data:
@@ -274,6 +279,8 @@ networks:
   bot_network:
     name: %s
     external: true
+  default:
+    driver: bridge
 `, miniappVolume, networkName)
 
 	os.WriteFile(filepath.Join(cfg.InstallDir, "docker-compose.caddy.yml"), []byte(content), 0644)
