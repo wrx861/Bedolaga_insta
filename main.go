@@ -3,7 +3,6 @@ package main
 import (
         "fmt"
         "os"
-        "syscall"
 
         "bedolaga-installer/pkg/ui"
 
@@ -78,8 +77,5 @@ func reopenStdinIfPipe() {
         if err != nil {
                 return // truly non-interactive (cron, CI, etc.)
         }
-        // Replace fd 0 with /dev/tty
-        syscall.Dup2(int(tty.Fd()), 0)
-        tty.Close()
-        os.Stdin = os.NewFile(0, "/dev/stdin")
+        os.Stdin = tty
 }
