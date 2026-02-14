@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"os"
-	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 )
