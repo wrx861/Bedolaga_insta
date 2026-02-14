@@ -682,6 +682,11 @@ func commandExists(name string) bool {
 	return err == nil
 }
 
+func isInteractive() bool {
+	fileInfo, _ := os.Stdin.Stat()
+	return (fileInfo.Mode() & os.ModeCharDevice) != 0
+}
+
 func generateToken() string {
 	b := make([]byte, 32)
 	rand.Read(b)
