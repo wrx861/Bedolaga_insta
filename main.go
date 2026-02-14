@@ -549,9 +549,19 @@ func inputText(label, placeholder, hint string, required bool) string {
 			continue
 		}
 		if val != "" {
-			fmt.Println(successStyle.Render("  ✓ Установлено"))
+			// Скрываем токены и ключи
+			displayVal := val
+			labelLower := strings.ToLower(label)
+			if strings.Contains(labelLower, "token") || strings.Contains(labelLower, "key") || strings.Contains(labelLower, "password") || strings.Contains(labelLower, "secret") {
+				if len(val) > 8 {
+					displayVal = val[:4] + "..." + val[len(val)-4:]
+				} else {
+					displayVal = "***"
+				}
+			}
+			fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s: %s", label, displayVal)))
 		} else {
-			fmt.Println(dimStyle.Render("  - Пропущено"))
+			fmt.Println(dimStyle.Render(fmt.Sprintf("  - %s: пропущено", label)))
 		}
 		return val
 	}
