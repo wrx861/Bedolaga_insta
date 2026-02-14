@@ -40,11 +40,11 @@
 - README.md обновлён
 
 ### 2026-12-xx: Caddy Docker-based fix v2.3.0
-- **Исправлен критический баг**: Caddy теперь работает как Docker-контейнер вместо хост-сервиса
-- Caddy находится в `bot_network` и проксирует на `remnawave_bot:8080` (внутренний Docker DNS)
+- **Исправлен критический баг**: Caddy теперь работает как Docker-контейнер с `network_mode: host`
+- Caddy проксирует на `127.0.0.1:8080` (бот публикует порт на хост)
+- Автоматический HTTPS от Let's Encrypt работает корректно
 - Генерируются файлы: `caddy/Caddyfile` + `docker-compose.caddy.yml`
-- Автоматический HTTPS работает корректно
-- Удалена зависимость от системного Caddy (`installCaddy()` не вызывается)
+- Протестировано на реальном сервере - webhook работает
 
 ## Prioritized Backlog
 
