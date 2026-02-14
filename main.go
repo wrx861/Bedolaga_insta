@@ -912,34 +912,28 @@ func detectOS() string {
 // ════════════════════════════════════════════════════════════════
 
 func updateSystem() {
-	runWithSpinner("Обновление списка пакетов...", func() error {
-		_, err := runShellSilent("DEBIAN_FRONTEND=noninteractive apt-get update -y -qq 2>/dev/null")
-		return err
-	})
+	runShellSilent("DEBIAN_FRONTEND=noninteractive apt-get update -y -qq 2>/dev/null")
 }
 
 func installBasePackages() {
-	runWithSpinner("Установка базовых пакетов...", func() error {
-		// Устанавливаем по частям для надёжности
-		packages := []string{
-			"curl wget git",
-			"nano htop",
-			"make openssl ca-certificates gnupg",
-			"lsb-release dnsutils",
-		}
-		for _, pkg := range packages {
-			runShellSilent(fmt.Sprintf("DEBIAN_FRONTEND=noninteractive apt-get install -y -qq %s 2>/dev/null || true", pkg))
-		}
-		// certbot опционален - может не быть в некоторых системах
-		runShellSilent("DEBIAN_FRONTEND=noninteractive apt-get install -y -qq certbot python3-certbot-nginx 2>/dev/null || true")
-		return nil
-	})
+	// Устанавливаем по частям для надёжности
+	packages := []string{
+		"curl wget git",
+		"nano htop",
+		"make openssl ca-certificates gnupg",
+		"lsb-release dnsutils",
+	}
+	for _, pkg := range packages {
+		runShellSilent(fmt.Sprintf("DEBIAN_FRONTEND=noninteractive apt-get install -y -qq %s 2>/dev/null || true", pkg))
+	}
+	// certbot опционален - может не быть в некоторых системах
+	runShellSilent("DEBIAN_FRONTEND=noninteractive apt-get install -y -qq certbot python3-certbot-nginx 2>/dev/null || true")
 }
 
 func installDocker() {
 	if commandExists("docker") {
 		ver, _ := runShellSilent("docker --version")
-		printSuccess("Docker: " + ver)
+		globalProgress.done("Docker: " + ver)
 	} else {
 		runWithSpinner("Установка Docker...", func() error {
 			_, err := runShellSilent("DEBIAN_FRONTEND=noninteractive curl -fsSL https://get.docker.com | sh")
