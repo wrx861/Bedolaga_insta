@@ -44,7 +44,7 @@ func manageBot() {
 	for {
 		printManageHeader(installDir)
 
-		idx := ui.SelectOption("Управление", []ui.SelectItem{
+		idx := ui.MenuOption("Управление", []ui.SelectItem{
 			{Title: "Логи", Description: "Просмотр логов в реальном времени (Ctrl+C — выход)"},
 			{Title: "Статус", Description: "Контейнеры, порты и потребление ресурсов"},
 			{Title: "Перезапуск", Description: "Перезапустить все контейнеры"},
