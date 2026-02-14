@@ -379,14 +379,14 @@ func (m selectModel) View() string {
 func selectOption(title string, items []selectItem) int {
 	if !isInteractive() {
 		// В неинтерактивном режиме выбираем первый вариант
-		printWarning("Неинтерактивный режим — выбран вариант по умолчанию: " + items[0].title)
+		fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s (авто)", items[0].title)))
 		return 0
 	}
 	m := newSelectModel(title, items)
 	p := tea.NewProgram(m)
 	result, err := p.Run()
 	if err != nil {
-		printWarning("Ошибка выбора, используется значение по умолчанию: " + items[0].title)
+		fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s (по умолчанию)", items[0].title)))
 		return 0
 	}
 	final := result.(selectModel)
@@ -395,6 +395,7 @@ func selectOption(title string, items []selectItem) int {
 		return final.selected
 	}
 	// Если ничего не выбрано — первый вариант
+	fmt.Println(successStyle.Render(fmt.Sprintf("  ✓ %s (по умолчанию)", items[0].title)))
 	return 0
 }
 
