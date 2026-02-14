@@ -87,7 +87,7 @@ fi
 # Проверяем git
 if ! command -v git &> /dev/null; then
     echo -e "${C}  ↓${NC} Установка git..."
-    apt-get update -qq && apt-get install -y -qq git > /dev/null 2>&1
+    DEBIAN_FRONTEND=noninteractive apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git > /dev/null 2>&1
     echo -e "${G}  ✓${NC} Git установлен"
 fi
 
