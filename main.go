@@ -817,15 +817,15 @@ func detectOS() string {
 
 func updateSystem() {
 	runWithSpinner("Обновление системных пакетов...", func() error {
-		runShellSilent("apt-get update -y")
-		runShellSilent("apt-get upgrade -y")
+		runShellSilent("DEBIAN_FRONTEND=noninteractive apt-get update -y -qq")
+		runShellSilent("DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -qq -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold'")
 		return nil
 	})
 }
 
 func installBasePackages() {
 	runWithSpinner("Установка базовых пакетов...", func() error {
-		runShellSilent("apt-get install -y curl wget git nano htop certbot python3-certbot-nginx make openssl ca-certificates gnupg lsb-release dnsutils")
+		runShellSilent("DEBIAN_FRONTEND=noninteractive apt-get install -y -qq curl wget git nano htop certbot python3-certbot-nginx make openssl ca-certificates gnupg lsb-release dnsutils")
 		return nil
 	})
 }
@@ -836,7 +836,7 @@ func installDocker() {
 		printSuccess("Docker: " + ver)
 	} else {
 		runWithSpinner("Установка Docker...", func() error {
-			runShellSilent("curl -fsSL https://get.docker.com | sh")
+			runShellSilent("DEBIAN_FRONTEND=noninteractive curl -fsSL https://get.docker.com | sh")
 			runShellSilent("systemctl enable docker")
 			runShellSilent("systemctl start docker")
 			return nil
@@ -857,7 +857,7 @@ func installNginx() {
 		return
 	}
 	runWithSpinner("Установка Nginx...", func() error {
-		runShellSilent("apt-get install -y nginx")
+		runShellSilent("DEBIAN_FRONTEND=noninteractive apt-get install -y -qq nginx")
 		runShellSilent("systemctl enable nginx")
 		runShellSilent("systemctl start nginx")
 		return nil
@@ -869,11 +869,11 @@ func installCaddy() {
 		return
 	}
 	runWithSpinner("Установка Caddy...", func() error {
-		runShellSilent("apt-get install -y debian-keyring debian-archive-keyring apt-transport-https curl")
+		runShellSilent("DEBIAN_FRONTEND=noninteractive apt-get install -y -qq debian-keyring debian-archive-keyring apt-transport-https curl")
 		runShellSilent("curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg 2>/dev/null || true")
 		runShellSilent("curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list > /dev/null")
-		runShellSilent("apt-get update -y")
-		runShellSilent("apt-get install -y caddy")
+		runShellSilent("DEBIAN_FRONTEND=noninteractive apt-get update -y -qq")
+		runShellSilent("DEBIAN_FRONTEND=noninteractive apt-get install -y -qq caddy")
 		return nil
 	})
 }
