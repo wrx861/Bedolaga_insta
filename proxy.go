@@ -1,0 +1,265 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"time"
+)
+
+// ════════════════════════════════════════════════════════════════
+// NGINX SETUP
+// ════════════════════════════════════════════════════════════════
+
+func setupNginxSystem(cfg *Config) {
+	installNginx()
+
+	nginxAvail := "/etc/nginx/sites-available"
+	nginxEnabled := "/etc/nginx/sites-enabled"
+	os.MkdirAll(nginxAvail, 0755)
+	os.MkdirAll(nginxEnabled, 0755)
+
+	if cfg.WebhookDomain != "" {
+		conf := fmt.Sprintf(`server {
+    listen 80;
+    server_name %s;
+    client_max_body_size 32m;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+        proxy_buffering off;
+        proxy_request_buffering off;
+    }
+
+    location = /app-config.json {
+        add_header Access-Control-Allow-Origin "*";
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+`, cfg.WebhookDomain)
+		os.WriteFile(filepath.Join(nginxAvail, "bedolaga-webhook"), []byte(conf), 0644)
+		os.Remove(filepath.Join(nginxEnabled, "bedolaga-webhook"))
+		os.Symlink(filepath.Join(nginxAvail, "bedolaga-webhook"), filepath.Join(nginxEnabled, "bedolaga-webhook"))
+	}
+
+	if cfg.MiniappDomain != "" {
+		conf := fmt.Sprintf(`server {
+    listen 80;
+    server_name %s;
+    client_max_body_size 32m;
+    root %s/miniapp;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+        expires 1h;
+        add_header Cache-Control "public";
+    }
+
+    location /miniapp/ {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+
+    location = /app-config.json {
+        add_header Access-Control-Allow-Origin "*";
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+`, cfg.MiniappDomain, cfg.InstallDir)
+		os.WriteFile(filepath.Join(nginxAvail, "bedolaga-miniapp"), []byte(conf), 0644)
+		os.Remove(filepath.Join(nginxEnabled, "bedolaga-miniapp"))
+		os.Symlink(filepath.Join(nginxAvail, "bedolaga-miniapp"), filepath.Join(nginxEnabled, "bedolaga-miniapp"))
+	}
+
+	runShellSilent("nginx -t && systemctl reload nginx")
+	printSuccess("Nginx настроен")
+}
+
+func setupNginxPanel(cfg *Config) {
+	panelNginxConf := filepath.Join(cfg.PanelDir, "nginx.conf")
+	if !fileExists(panelNginxConf) {
+		printWarning("nginx.conf панели не найден, переключаемся на системный nginx")
+		setupNginxSystem(cfg)
+		return
+	}
+
+	runShellSilent(fmt.Sprintf(`cp "%s" "%s.backup.$(date +%%Y%%m%%d_%%H%%M%%S)"`, panelNginxConf, panelNginxConf))
+	runShellSilent(fmt.Sprintf(`sed -i '/# === BEGIN Bedolaga Bot ===/,/# === END Bedolaga Bot ===/d' "%s"`, panelNginxConf))
+
+	block := "\n# === BEGIN Bedolaga Bot ===\n"
+	if cfg.WebhookDomain != "" {
+		block += fmt.Sprintf(`server {
+    server_name %s;
+    listen 443 ssl;
+    http2 on;
+    ssl_certificate "/etc/letsencrypt/live/%s/fullchain.pem";
+    ssl_certificate_key "/etc/letsencrypt/live/%s/privkey.pem";
+    client_max_body_size 32m;
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+        proxy_buffering off;
+    }
+}
+`, cfg.WebhookDomain, cfg.WebhookDomain, cfg.WebhookDomain)
+	}
+	if cfg.MiniappDomain != "" {
+		block += fmt.Sprintf(`server {
+    server_name %s;
+    listen 443 ssl;
+    http2 on;
+    ssl_certificate "/etc/letsencrypt/live/%s/fullchain.pem";
+    ssl_certificate_key "/etc/letsencrypt/live/%s/privkey.pem";
+    client_max_body_size 32m;
+    location /miniapp/ {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+    location = /app-config.json {
+        add_header Access-Control-Allow-Origin "*";
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    location / {
+        root /var/www/remnawave-miniapp;
+        try_files $uri $uri/ /index.html;
+        expires 1h;
+        add_header Cache-Control "public, immutable";
+    }
+}
+`, cfg.MiniappDomain, cfg.MiniappDomain, cfg.MiniappDomain)
+	}
+	block += "# === END Bedolaga Bot ===\n"
+
+	f, err := os.OpenFile(panelNginxConf, os.O_APPEND|os.O_WRONLY, 0644)
+	if err == nil {
+		f.WriteString(block)
+		f.Close()
+	}
+
+	runShellSilent(fmt.Sprintf("cd %s && docker compose up -d remnawave-nginx 2>/dev/null || docker restart remnawave-nginx 2>/dev/null || true", cfg.PanelDir))
+	printSuccess("Nginx панели обновлён")
+}
+
+// ════════════════════════════════════════════════════════════════
+// CADDY SETUP
+// ════════════════════════════════════════════════════════════════
+
+func setupCaddy(cfg *Config) {
+	installCaddy()
+
+	caddyFile := "/etc/caddy/Caddyfile"
+	if fileExists(caddyFile) {
+		runShellSilent(fmt.Sprintf(`cp "%s" "%s.backup.$(date +%%Y%%m%%d_%%H%%M%%S)"`, caddyFile, caddyFile))
+		runShellSilent(fmt.Sprintf(`sed -i '/# === BEGIN Bedolaga Bot ===/,/# === END Bedolaga Bot ===/d' "%s"`, caddyFile))
+	}
+
+	block := "\n# === BEGIN Bedolaga Bot ===\n"
+	if cfg.WebhookDomain != "" {
+		block += fmt.Sprintf(`%s {
+    reverse_proxy localhost:8080
+}
+
+`, cfg.WebhookDomain)
+	}
+	if cfg.MiniappDomain != "" {
+		block += fmt.Sprintf(`%s {
+    @api path /miniapp/*
+    reverse_proxy @api localhost:8080
+    @config path /app-config.json
+    reverse_proxy @config localhost:8080
+    header @config Access-Control-Allow-Origin *
+    root * %s/miniapp
+    try_files {path} {path}/ /index.html
+    file_server
+}
+
+`, cfg.MiniappDomain, cfg.InstallDir)
+	}
+	block += "# === END Bedolaga Bot ===\n"
+
+	f, _ := os.OpenFile(caddyFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if f != nil {
+		f.WriteString(block)
+		f.Close()
+	}
+
+	runShellSilent("systemctl enable caddy 2>/dev/null || true")
+	runShellSilent("systemctl reload caddy 2>/dev/null || systemctl restart caddy 2>/dev/null || true")
+	printSuccess("Caddy настроен (автоматический HTTPS)")
+}
+
+// ════════════════════════════════════════════════════════════════
+// SSL SETUP
+// ════════════════════════════════════════════════════════════════
+
+func setupSSL(cfg *Config) {
+	if cfg.ReverseProxyType == "caddy" || cfg.ReverseProxyType == "skip" {
+		return
+	}
+	if cfg.WebhookDomain == "" && cfg.MiniappDomain == "" {
+		return
+	}
+
+	if !confirmPrompt("Получить SSL-сертификаты сейчас?", true) {
+		printInfo("Вы можете получить сертификаты позже: certbot --nginx -d yourdomain.com")
+		return
+	}
+
+	cfg.SSLEmail = inputText("Email Let's Encrypt", "admin@example.com", "Email для уведомлений о SSL-сертификатах", true)
+
+	isPanelMode := cfg.ReverseProxyType == "nginx_panel"
+
+	for _, domain := range []string{cfg.WebhookDomain, cfg.MiniappDomain} {
+		if domain == "" {
+			continue
+		}
+		runWithSpinner("Получение SSL для "+domain+"...", func() error {
+			if isPanelMode {
+				runShellSilent("docker stop remnawave-nginx 2>/dev/null || true")
+				runShellSilent("systemctl stop nginx 2>/dev/null || true")
+				time.Sleep(2 * time.Second)
+				err := runShell(fmt.Sprintf("certbot certonly --standalone -d %s --email %s --agree-tos --non-interactive", domain, cfg.SSLEmail))
+				runShellSilent("docker start remnawave-nginx 2>/dev/null || true")
+				runShellSilent("systemctl start nginx 2>/dev/null || true")
+				return err
+			}
+			return runShell(fmt.Sprintf("certbot --nginx -d %s --email %s --agree-tos --non-interactive", domain, cfg.SSLEmail))
+		})
+	}
+
+	runShellSilent("systemctl enable certbot.timer 2>/dev/null || true")
+	runShellSilent("systemctl start certbot.timer 2>/dev/null || true")
+}
