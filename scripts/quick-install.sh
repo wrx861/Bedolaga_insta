@@ -75,12 +75,27 @@ install_go() {
     echo -e "${G}  ✓${NC} Go ${GO_VERSION} установлен"
 }
 
-# Проверяем Go
+# Проверяем Go (минимум 1.24)
+GO_MIN_MAJOR=1
+GO_MIN_MINOR=24
+need_install=false
+
 if command -v go &> /dev/null; then
     GO_VER=$(go version | awk '{print $3}' | sed 's/go//')
-    echo -e "${G}  ✓${NC} Go: ${C}${GO_VER}${NC}"
-    export PATH=/usr/local/go/bin:$PATH
+    GO_MAJOR=$(echo "$GO_VER" | cut -d. -f1)
+    GO_MINOR=$(echo "$GO_VER" | cut -d. -f2)
+    if [ "$GO_MAJOR" -lt "$GO_MIN_MAJOR" ] || ([ "$GO_MAJOR" -eq "$GO_MIN_MAJOR" ] && [ "$GO_MINOR" -lt "$GO_MIN_MINOR" ]); then
+        echo -e "${Y}  ⚠${NC} Go ${GO_VER} устарел (нужен ≥1.24)"
+        need_install=true
+    else
+        echo -e "${G}  ✓${NC} Go: ${C}${GO_VER}${NC}"
+        export PATH=/usr/local/go/bin:$PATH
+    fi
 else
+    need_install=true
+fi
+
+if [ "$need_install" = true ]; then
     install_go
 fi
 
