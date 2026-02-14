@@ -2558,7 +2558,7 @@ do_config()    { check_dir; ${EDITOR:-nano} "$INSTALL_DIR/.env"; echo -e "${Y}  
 do_uninstall() {
     check_dir
     echo -e "${R}  ╔══════════════════════════════════╗${NC}"
-    echo -e "${R}  ║       BOT REMOVAL                 ║${NC}"
+    echo -e "${R}  ║         УДАЛЕНИЕ БОТА             ║${NC}"
     echo -e "${R}  ╚══════════════════════════════════╝${NC}"
     echo -e "${Y}  This will stop and remove bot containers.${NC}"
     read -p "  Type 'yes' to confirm: " CONFIRM
