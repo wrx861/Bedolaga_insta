@@ -1210,27 +1210,7 @@ func interactiveSetup(cfg *Config) {
 		cfg.RemnawavePassword = inputText("REMNAWAVE_PASSWORD", "", "", false)
 	}
 
-	// 6. eGames SECRET_KEY
-	isLocal := strings.HasPrefix(cfg.RemnawaveAPIURL, "http://remnawave:") ||
-		strings.HasPrefix(cfg.RemnawaveAPIURL, "http://localhost:") ||
-		strings.HasPrefix(cfg.RemnawaveAPIURL, "http://127.0.0.1:")
-
-	if isLocal {
-		printInfo("Локальное подключение к панели — SECRET_KEY не требуется")
-	} else {
-		if confirmPrompt("Панель установлена через eGames скрипт? (добавляет защиту URL секретом)", false) {
-			printDim("Формат: КЛЮЧ:ЗНАЧЕНИЕ (с двоеточием!)")
-			printDim("Пример: MHPsUKCz:VfHqrBwp")
-			sk := inputText("REMNAWAVE_SECRET_KEY", "KEY:VALUE", "Используйте ДВОЕТОЧИЕ (:), не равно (=)!", false)
-			if strings.Contains(sk, "=") && !strings.Contains(sk, ":") {
-				sk = strings.Replace(sk, "=", ":", 1)
-				printWarning("Автоисправление: заменено = на : → " + sk)
-			}
-			cfg.RemnawaveSecretKey = sk
-		}
-	}
-
-	// 7. Webhook domain
+	// 6. Webhook domain
 	cfg.WebhookDomain = inputDomainSafe("Домен вебхука (необязательно)", "Для режима webhook. Оставьте пустым для polling.")
 
 	// 8. Miniapp domain
