@@ -843,18 +843,32 @@ func installDocker() {
 		printSuccess("Docker: " + ver)
 	} else {
 		runWithSpinner("Установка Docker...", func() error {
-			runShellSilent("DEBIAN_FRONTEND=noninteractive curl -fsSL https://get.docker.com | sh")
-			runShellSilent("systemctl enable docker")
-			runShellSilent("systemctl start docker")
+			_, err := runShellSilent("DEBIAN_FRONTEND=noninteractive curl -fsSL https://get.docker.com | sh")
+			if err != nil {
+				return err
+			}
+			runShellSilent("systemctl enable docker 2>/dev/null || true")
+			runShellSilent("systemctl start docker 2>/dev/null || true")
 			return nil
 		})
+		// Проверяем, что Docker реально установился
+		if !commandExists("docker") {
+			printErrorBox("Не удалось установить Docker!")
+			printInfo("Попробуйте установить Docker вручную: curl -fsSL https://get.docker.com | sh")
+			os.Exit(1)
+		}
 		ver, _ := runShellSilent("docker --version")
 		printSuccess("Docker установлен: " + ver)
 	}
-	if out, err := runShellSilent("docker compose version"); err == nil {
+	
+	// Проверяем Docker Compose
+	if out, err := runShellSilent("docker compose version 2>/dev/null"); err == nil && out != "" {
 		printSuccess("Docker Compose: " + out)
+	} else if out, err := runShellSilent("docker-compose --version 2>/dev/null"); err == nil && out != "" {
+		printSuccess("Docker Compose (standalone): " + out)
 	} else {
 		printErrorBox("Docker Compose не найден!")
+		printInfo("Установите Docker Compose: apt install docker-compose-plugin")
 		os.Exit(1)
 	}
 }
