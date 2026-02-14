@@ -2560,7 +2560,7 @@ do_uninstall() {
     echo -e "${R}  ╔══════════════════════════════════╗${NC}"
     echo -e "${R}  ║         УДАЛЕНИЕ БОТА             ║${NC}"
     echo -e "${R}  ╚══════════════════════════════════╝${NC}"
-    echo -e "${Y}  This will stop and remove bot containers.${NC}"
+    echo -e "${Y}  Это остановит и удалит контейнеры бота.${NC}"
     read -p "  Type 'yes' to confirm: " CONFIRM
     [ "$CONFIRM" != "yes" ] && echo "  Cancelled" && return
     docker compose -f "$COMPOSE_FILE" down
