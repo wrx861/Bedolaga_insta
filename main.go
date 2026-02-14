@@ -2621,7 +2621,7 @@ show_help() {
     echo -e "  ${W}stop${NC}              Остановка"
     echo -e "  ${W}update${NC}            Обновление (git pull + пересборка)"
     echo -e "  ${W}backup${NC}            Создать бэкап"
-    echo -e "  ${W}health${NC}     System diagnostics"
+    echo -e "  ${W}health${NC}            Диагностика системы"
     echo -e "  ${W}config${NC}     Edit .env"
     echo -e "  ${W}uninstall${NC}  Remove bot"
 }
