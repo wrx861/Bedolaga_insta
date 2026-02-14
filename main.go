@@ -2580,7 +2580,7 @@ show_menu() {
     echo "  ║                                                      ║"
     echo "  ╚══════════════════════════════════════════════════════╝"
     echo -e "${NC}"
-    echo -e "  ${D}Directory:${NC} ${C}$INSTALL_DIR${NC}"
+    echo -e "  ${D}Каталог:${NC} ${C}$INSTALL_DIR${NC}"
     docker ps --format '{{.Names}}' | grep -q "remnawave_bot$" && echo -e "  ${D}Status:${NC}    ${G}● Running${NC}" || echo -e "  ${D}Status:${NC}    ${R}○ Stopped${NC}"
     echo
     echo -e "  ${D}─────────────────────────────────────────${NC}"
