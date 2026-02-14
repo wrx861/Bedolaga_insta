@@ -197,7 +197,7 @@ func (p *installProgress) advance(stepName string) {
 	stepLabel := lipgloss.NewStyle().Foreground(colorWhite).Bold(true).Render(stepName)
 	counter := dimStyle.Render(fmt.Sprintf("[%2d/%d]", p.current, p.total))
 
-	// Очищаем строку и печатаем прогресс на той же позиции
+	// Очищаем строку и печатаем прогресс на той же позиции (ANSI escape: \033[K)
 	fmt.Printf("\r\033[K  %s %s%s %s  %s %s", counter, bar, empty, pctStr, accentBar.Render("▸"), stepLabel)
 	
 	// Переход на новую строку только в конце
