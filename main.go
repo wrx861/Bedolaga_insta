@@ -2553,7 +2553,7 @@ do_health() {
     docker compose -f "$COMPOSE_FILE" logs --tail=10 bot 2>/dev/null
 }
 
-do_config()    { check_dir; ${EDITOR:-nano} "$INSTALL_DIR/.env"; echo -e "${Y}  Restart to apply: bot restart${NC}"; }
+do_config()    { check_dir; ${EDITOR:-nano} "$INSTALL_DIR/.env"; echo -e "${Y}  Перезапустите для применения: bot restart${NC}"; }
 
 do_uninstall() {
     check_dir
