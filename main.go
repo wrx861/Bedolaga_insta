@@ -1005,13 +1005,14 @@ func setupLocalPanel(cfg *Config) {
 
 	if !dirExists(cfg.PanelDir) {
 		printWarning("Каталог " + cfg.PanelDir + " не найден")
-		if !confirmPrompt("Продолжить всё равно?", false) {
-			os.Exit(1)
-		}
-	} else {
-		printSuccess("Панель найдена: " + cfg.PanelDir)
+		printInfo("Переключаемся на режим внешней панели — укажите URL позже")
+		cfg.PanelInstalledLocally = false
+		cfg.PanelDir = ""
+		cfg.DockerNetwork = ""
+		return
 	}
-
+	
+	printSuccess("Панель найдена: " + cfg.PanelDir)
 	detectPanelNetwork(cfg)
 }
 
