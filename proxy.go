@@ -191,7 +191,19 @@ func setupCaddy(cfg *Config) {
 	block := "\n# === BEGIN Bedolaga Bot ===\n"
 	if cfg.WebhookDomain != "" {
 		block += fmt.Sprintf(`%s {
-    reverse_proxy localhost:8080
+    reverse_proxy 127.0.0.1:8080 {
+        flush_interval -1
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+        transport http {
+            read_timeout 120s
+            write_timeout 120s
+        }
+    }
+    request_body {
+        max_size 32MB
+    }
 }
 
 `, cfg.WebhookDomain)
@@ -199,13 +211,21 @@ func setupCaddy(cfg *Config) {
 	if cfg.MiniappDomain != "" {
 		block += fmt.Sprintf(`%s {
     @api path /miniapp/*
-    reverse_proxy @api localhost:8080
+    reverse_proxy @api 127.0.0.1:8080 {
+        flush_interval -1
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
     @config path /app-config.json
-    reverse_proxy @config localhost:8080
+    reverse_proxy @config 127.0.0.1:8080
     header @config Access-Control-Allow-Origin *
     root * %s/miniapp
     try_files {path} {path}/ /index.html
     file_server
+    request_body {
+        max_size 32MB
+    }
 }
 
 `, cfg.MiniappDomain, cfg.InstallDir)
