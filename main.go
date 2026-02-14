@@ -1111,6 +1111,10 @@ func inputDomainSafe(label, hint string) string {
 		if !validateDomain(val) {
 			printError("Неверный формат домена: " + val)
 			printDim("Ожидаемый формат: bot.example.com")
+			if !isInteractive() {
+				// В неинтерактивном режиме пропускаем
+				return ""
+			}
 			idx := selectOption("Что делать?", []selectItem{
 				{title: "Попробовать снова", description: "Ввести другой домен"},
 				{title: "Использовать всё равно", description: "Продолжить с этим значением"},
@@ -1128,6 +1132,10 @@ func inputDomainSafe(label, hint string) string {
 		printInfo("Проверка DNS...")
 		if !checkDomainDNS(val) {
 			printWarning("DNS не указывает на этот сервер")
+			if !isInteractive() {
+				// В неинтерактивном режиме продолжаем с этим доменом
+				return val
+			}
 			idx := selectOption("Что делать?", []selectItem{
 				{title: "Попробовать другой домен", description: "Ввести другой домен"},
 				{title: "Продолжить с этим доменом", description: "DNS можно настроить позже"},
