@@ -2619,7 +2619,7 @@ show_help() {
     echo -e "  ${W}restart${NC}           Перезапуск"
     echo -e "  ${W}start${NC}             Запуск"
     echo -e "  ${W}stop${NC}              Остановка"
-    echo -e "  ${W}update${NC}     Update (git pull + rebuild)"
+    echo -e "  ${W}update${NC}            Обновление (git pull + пересборка)"
     echo -e "  ${W}backup${NC}     Create backup"
     echo -e "  ${W}health${NC}     System diagnostics"
     echo -e "  ${W}config${NC}     Edit .env"
