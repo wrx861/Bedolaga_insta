@@ -16,6 +16,7 @@ import (
 func startDocker(cfg *Config) {
 	runShellSilent(fmt.Sprintf("cd %s && docker compose down 2>/dev/null || true", cfg.InstallDir))
 	runShellSilent(fmt.Sprintf("cd %s && docker compose -f docker-compose.local.yml down 2>/dev/null || true", cfg.InstallDir))
+	runShellSilent(fmt.Sprintf("cd %s && docker compose -f docker-compose.caddy.yml down 2>/dev/null || true", cfg.InstallDir))
 
 	composeFile := "docker-compose.yml"
 
@@ -31,19 +32,43 @@ func startDocker(cfg *Config) {
 		}
 	}
 
+	// Создаём сеть бота заранее (нужна для Caddy)
+	runShellSilent("docker network create remnawave_bot_network 2>/dev/null || true")
+
 	ui.RunWithSpinner("Сборка и запуск контейнеров...", func() error {
 		_, err := runShellSilent(fmt.Sprintf("cd %s && docker compose -f %s up -d --build 2>&1", cfg.InstallDir, composeFile))
 		return err
 	})
 
+	// Если выбран Caddy — запускаем его контейнер
+	if cfg.ReverseProxyType == "caddy" {
+		caddyComposeFile := filepath.Join(cfg.InstallDir, "docker-compose.caddy.yml")
+		if fileExists(caddyComposeFile) {
+			ui.RunWithSpinner("Запуск Caddy контейнера...", func() error {
+				_, err := runShellSilent(fmt.Sprintf("cd %s && docker compose -f docker-compose.caddy.yml up -d 2>&1", cfg.InstallDir))
+				return err
+			})
+		}
+	}
+
 	ui.PrintInfo("Ожидание контейнеров...")
 	time.Sleep(8 * time.Second)
 
+	// Показываем статус основного compose
 	out, _ := runShellSilent(fmt.Sprintf("cd %s && docker compose -f %s ps --format 'table {{.Name}}\\t{{.Status}}' 2>/dev/null", cfg.InstallDir, composeFile))
 	if out != "" {
 		fmt.Println()
 		fmt.Println(ui.DimStyle.Render("  " + strings.ReplaceAll(out, "\n", "\n  ")))
 		fmt.Println()
+	}
+
+	// Показываем статус Caddy если запущен
+	if cfg.ReverseProxyType == "caddy" {
+		caddyOut, _ := runShellSilent(fmt.Sprintf("cd %s && docker compose -f docker-compose.caddy.yml ps --format 'table {{.Name}}\\t{{.Status}}' 2>/dev/null", cfg.InstallDir))
+		if caddyOut != "" {
+			fmt.Println(ui.DimStyle.Render("  " + strings.ReplaceAll(caddyOut, "\n", "\n  ")))
+			fmt.Println()
+		}
 	}
 
 	if cfg.PanelInstalledLocally && cfg.DockerNetwork != "" {
