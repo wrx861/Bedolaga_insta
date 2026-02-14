@@ -176,30 +176,31 @@ func setupNginxPanel(cfg *Config) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// CADDY SETUP
+// CADDY SETUP (Docker-based)
 // ════════════════════════════════════════════════════════════════
 
 func setupCaddy(cfg *Config) {
-	installCaddy()
+	// Создаём Caddyfile для Docker-контейнера
+	createCaddyfile(cfg)
+	// Создаём docker-compose для Caddy
+	createCaddyCompose(cfg)
+	ui.PrintSuccess("Caddy настроен (Docker-контейнер с автоматическим HTTPS)")
+}
 
-	caddyFile := "/etc/caddy/Caddyfile"
-	if fileExists(caddyFile) {
-		runShellSilent(fmt.Sprintf(`cp "%s" "%s.backup.$(date +%%Y%%m%%d_%%H%%M%%S)"`, caddyFile, caddyFile))
-		runShellSilent(fmt.Sprintf(`sed -i '/# === BEGIN Bedolaga Bot ===/,/# === END Bedolaga Bot ===/d' "%s"`, caddyFile))
-	}
+func createCaddyfile(cfg *Config) {
+	caddyDir := filepath.Join(cfg.InstallDir, "caddy")
+	os.MkdirAll(caddyDir, 0755)
 
-	block := "\n# === BEGIN Bedolaga Bot ===\n"
+	var content string
+
 	if cfg.WebhookDomain != "" {
-		block += fmt.Sprintf(`%s {
-    reverse_proxy 127.0.0.1:8080 {
+		content += fmt.Sprintf(`%s {
+    reverse_proxy remnawave_bot:8080 {
         flush_interval -1
         header_up Host {host}
         header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
         header_up X-Forwarded-Proto {scheme}
-        transport http {
-            read_timeout 120s
-            write_timeout 120s
-        }
     }
     request_body {
         max_size 32MB
@@ -208,19 +209,21 @@ func setupCaddy(cfg *Config) {
 
 `, cfg.WebhookDomain)
 	}
+
 	if cfg.MiniappDomain != "" {
-		block += fmt.Sprintf(`%s {
+		content += fmt.Sprintf(`%s {
     @api path /miniapp/*
-    reverse_proxy @api 127.0.0.1:8080 {
+    reverse_proxy @api remnawave_bot:8080 {
         flush_interval -1
         header_up Host {host}
         header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
         header_up X-Forwarded-Proto {scheme}
     }
     @config path /app-config.json
-    reverse_proxy @config 127.0.0.1:8080
+    reverse_proxy @config remnawave_bot:8080
     header @config Access-Control-Allow-Origin *
-    root * %s/miniapp
+    root * /srv/miniapp
     try_files {path} {path}/ /index.html
     file_server
     request_body {
@@ -228,19 +231,54 @@ func setupCaddy(cfg *Config) {
     }
 }
 
-`, cfg.MiniappDomain, cfg.InstallDir)
-	}
-	block += "# === END Bedolaga Bot ===\n"
-
-	f, _ := os.OpenFile(caddyFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if f != nil {
-		f.WriteString(block)
-		f.Close()
+`, cfg.MiniappDomain)
 	}
 
-	runShellSilent("systemctl enable caddy 2>/dev/null || true")
-	runShellSilent("systemctl reload caddy 2>/dev/null || systemctl restart caddy 2>/dev/null || true")
-	ui.PrintSuccess("Caddy настроен (автоматический HTTPS)")
+	os.WriteFile(filepath.Join(caddyDir, "Caddyfile"), []byte(content), 0644)
+}
+
+func createCaddyCompose(cfg *Config) {
+	// Определяем сеть бота
+	networkName := "remnawave_bot_network"
+
+	// Volumes для miniapp если нужен
+	miniappVolume := ""
+	if cfg.MiniappDomain != "" {
+		miniappVolume = fmt.Sprintf(`
+      - %s/miniapp:/srv/miniapp:ro`, cfg.InstallDir)
+	}
+
+	content := fmt.Sprintf(`services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: remnawave_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config%s
+    networks:
+      - bot_network
+    depends_on:
+      - bot
+
+volumes:
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
+
+networks:
+  bot_network:
+    name: %s
+    external: true
+`, miniappVolume, networkName)
+
+	os.WriteFile(filepath.Join(cfg.InstallDir, "docker-compose.caddy.yml"), []byte(content), 0644)
 }
 
 // ════════════════════════════════════════════════════════════════
