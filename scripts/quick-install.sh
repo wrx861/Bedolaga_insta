@@ -112,12 +112,28 @@ rm -rf "$TMP_DIR"
 git clone --depth 1 -q "$REPO_URL" "$TMP_DIR"
 echo -e "${G}  ✓${NC} Репозиторий клонирован"
 
-echo -e "${C}  ⚙${NC} Сборка установщика..."
+echo -ne "${C}  ⚙${NC} Сборка установщика..."
 cd "$TMP_DIR"
 export PATH=/usr/local/go/bin:$PATH
-go build -o "$INSTALL_PATH" .
-chmod +x "$INSTALL_PATH"
-echo -e "${G}  ✓${NC} Установщик собран: ${C}${INSTALL_PATH}${NC}"
+go build -o "$INSTALL_PATH" . > /dev/null 2>&1 &
+BUILD_PID=$!
+# Спиннер пока идёт сборка
+SPINNER="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+i=0
+while kill -0 $BUILD_PID 2>/dev/null; do
+    printf "\r${C}  %s${NC} Сборка установщика..." "${SPINNER:i++%${#SPINNER}:1}"
+    sleep 0.1
+done
+wait $BUILD_PID
+BUILD_STATUS=$?
+printf "\r"
+if [ $BUILD_STATUS -eq 0 ]; then
+    chmod +x "$INSTALL_PATH"
+    echo -e "${G}  ✓${NC} Установщик собран: ${C}${INSTALL_PATH}${NC}"
+else
+    echo -e "${R}  ✗${NC} Ошибка сборки установщика"
+    exit 1
+fi
 
 # Переходим в домашнюю директорию ПЕРЕД удалением tmp
 cd /root
