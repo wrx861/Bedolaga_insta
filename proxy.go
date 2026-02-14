@@ -193,17 +193,11 @@ func createCaddyfile(cfg *Config) {
 
 	var content string
 
+	// Используем 127.0.0.1:8080 т.к. Caddy работает в host network mode
 	if cfg.WebhookDomain != "" {
 		content += fmt.Sprintf(`%s {
-    reverse_proxy remnawave_bot:8080 {
+    reverse_proxy 127.0.0.1:8080 {
         flush_interval -1
-        header_up Host {host}
-        header_up X-Real-IP {remote_host}
-        header_up X-Forwarded-For {remote_host}
-        header_up X-Forwarded-Proto {scheme}
-    }
-    request_body {
-        max_size 32MB
     }
 }
 
@@ -213,25 +207,18 @@ func createCaddyfile(cfg *Config) {
 	if cfg.MiniappDomain != "" {
 		content += fmt.Sprintf(`%s {
     @api path /miniapp/*
-    reverse_proxy @api remnawave_bot:8080 {
+    reverse_proxy @api 127.0.0.1:8080 {
         flush_interval -1
-        header_up Host {host}
-        header_up X-Real-IP {remote_host}
-        header_up X-Forwarded-For {remote_host}
-        header_up X-Forwarded-Proto {scheme}
     }
     @config path /app-config.json
-    reverse_proxy @config remnawave_bot:8080
+    reverse_proxy @config 127.0.0.1:8080
     header @config Access-Control-Allow-Origin *
-    root * /srv/miniapp
+    root * %s/miniapp
     try_files {path} {path}/ /index.html
     file_server
-    request_body {
-        max_size 32MB
-    }
 }
 
-`, cfg.MiniappDomain)
+`, cfg.MiniappDomain, cfg.InstallDir)
 	}
 
 	os.WriteFile(filepath.Join(caddyDir, "Caddyfile"), []byte(content), 0644)
