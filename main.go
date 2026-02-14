@@ -891,14 +891,14 @@ func detectOS() string {
 	out, _ := runShellSilent("cat /etc/os-release 2>/dev/null | grep ^ID= | cut -d= -f2 | tr -d '\"'")
 	prettyName, _ := runShellSilent("cat /etc/os-release 2>/dev/null | grep ^PRETTY_NAME= | cut -d= -f2 | tr -d '\"'")
 	if prettyName != "" {
-		printInfo("ОС: " + prettyName)
+		globalProgress.info("ОС: " + prettyName)
 	}
 	switch out {
 	case "ubuntu", "debian":
 		return out
 	default:
 		if out != "" {
-			printWarning("Оптимизировано для Ubuntu/Debian. Обнаружено: " + out)
+			globalProgress.warn("Оптимизировано для Ubuntu/Debian. Обнаружено: " + out)
 			if !confirmPrompt("Продолжить на неподдерживаемой ОС?", false) {
 				os.Exit(0)
 			}
