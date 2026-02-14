@@ -2504,13 +2504,16 @@ func installWizard() {
 	createManagementScript(cfg)
 	printFinalInfo(cfg)
 
-	if confirmPrompt("Показать логи бота?", false) {
-		composeFile := "docker-compose.yml"
-		if cfg.PanelInstalledLocally {
-			composeFile = "docker-compose.local.yml"
+	// Спросить о логах только в интерактивном режиме
+	if isInteractive() {
+		if confirmPrompt("Показать логи бота?", false) {
+			composeFile := "docker-compose.yml"
+			if cfg.PanelInstalledLocally {
+				composeFile = "docker-compose.local.yml"
+			}
+			allowExit = true
+			runShell(fmt.Sprintf("cd %s && docker compose -f %s logs --tail=150 -f bot", cfg.InstallDir, composeFile))
 		}
-		allowExit = true
-		runShell(fmt.Sprintf("cd %s && docker compose -f %s logs --tail=150 -f bot", cfg.InstallDir, composeFile))
 	}
 }
 
