@@ -2611,7 +2611,7 @@ interactive_menu() {
 
 show_help() {
     echo -e "${A}  REMNAWAVE BEDOLAGA BOT${NC}"
-    echo -e "  ${D}Usage: bot [command]${NC}"
+    echo -e "  ${D}Использование: bot [команда]${NC}"
     echo
     echo -e "  ${W}(no args)${NC}  Interactive menu"
     echo -e "  ${W}logs${NC}       View bot logs"
