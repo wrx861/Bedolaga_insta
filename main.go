@@ -2497,7 +2497,7 @@ func createManagementScript(cfg *Config) {
 INSTALL_DIR="%s"
 COMPOSE_FILE="%s"
 
-# Colors
+# Цвета
 P='\033[0;35m'   # Purple
 G='\033[0;32m'   # Green
 R='\033[0;31m'   # Red
