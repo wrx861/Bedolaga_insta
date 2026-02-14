@@ -1586,8 +1586,8 @@ DEFAULT_DEVICE_LIMIT=3
 		cfg.BotToken, cfg.AdminIDs, cfg.SupportUsername,
 		cfg.PostgresPassword,
 		cfg.RemnawaveAPIURL, cfg.RemnawaveAPIKey, cfg.RemnawaveAuthType,
-		basicAuthLines, cfg.RemnawaveSecretKey,
-		cfg.BotRunMode, cfg.WebhookURL, cfg.WebhookSecretToken,
+		basicAuthLines, secretKeyLine,
+		cfg.BotRunMode, webhookURLLine, webhookSecretLine,
 		cfg.WebAPIEnabled, cfg.WebAPIDefaultToken,
 		cabinetJWTSecret, adminNotifEnabled, adminNotifChatID,
 	)
