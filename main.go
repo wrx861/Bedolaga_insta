@@ -2549,7 +2549,7 @@ do_health() {
     docker compose -f "$COMPOSE_FILE" exec -T postgres pg_isready -U remnawave_user >/dev/null 2>&1 && echo -e "${G}  ✓ PostgreSQL: работает${NC}" || echo -e "${R}  ✗ PostgreSQL: не доступен${NC}"
     docker compose -f "$COMPOSE_FILE" exec -T redis redis-cli ping >/dev/null 2>&1 && echo -e "${G}  ✓ Redis: работает${NC}" || echo -e "${R}  ✗ Redis: не доступен${NC}"
     echo
-    echo -e "${D}  Last 10 log lines:${NC}"
+    echo -e "${D}  Последние 10 строк логов:${NC}"
     docker compose -f "$COMPOSE_FILE" logs --tail=10 bot 2>/dev/null
 }
 
