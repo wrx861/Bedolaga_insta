@@ -2512,7 +2512,7 @@ check_dir() { [ ! -d "$INSTALL_DIR" ] && echo -e "${R}  ✗ Бот не найд
 
 do_logs()    { check_dir; echo -e "${C}  Логи (Ctrl+C для выхода)...${NC}"; docker compose -f "$COMPOSE_FILE" logs -f --tail=150 bot; }
 do_status()  { check_dir; echo; echo -e "${W}  Статус контейнеров${NC}"; echo -e "${D}  --------------------------------------------------${NC}"; docker compose -f "$COMPOSE_FILE" ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null; echo; echo -e "${W}  Ресурсы${NC}"; echo -e "${D}  --------------------------------------------------${NC}"; docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}" 2>/dev/null | grep -E "remnawave|postgres|redis" || echo "  Нет данных"; }
-do_restart() { check_dir; echo -e "${C}  Restarting...${NC}"; docker compose -f "$COMPOSE_FILE" restart && echo -e "${G}  ✓ Restarted${NC}"; }
+do_restart() { check_dir; echo -e "${C}  Перезапуск...${NC}"; docker compose -f "$COMPOSE_FILE" restart && echo -e "${G}  ✓ Перезапущено${NC}"; }
 do_start()   { check_dir; echo -e "${C}  Starting...${NC}"; docker compose -f "$COMPOSE_FILE" up -d && echo -e "${G}  ✓ Started${NC}"; }
 do_stop()    { check_dir; echo -e "${C}  Stopping...${NC}"; docker compose -f "$COMPOSE_FILE" down && echo -e "${G}  ✓ Stopped${NC}"; }
 
