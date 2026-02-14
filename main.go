@@ -2617,7 +2617,7 @@ show_help() {
     echo -e "  ${W}logs${NC}              Просмотр логов"
     echo -e "  ${W}status${NC}            Статус контейнеров"
     echo -e "  ${W}restart${NC}           Перезапуск"
-    echo -e "  ${W}start${NC}      Start bot"
+    echo -e "  ${W}start${NC}             Запуск"
     echo -e "  ${W}stop${NC}       Stop bot"
     echo -e "  ${W}update${NC}     Update (git pull + rebuild)"
     echo -e "  ${W}backup${NC}     Create backup"
