@@ -2561,7 +2561,7 @@ do_uninstall() {
     echo -e "${R}  ║         УДАЛЕНИЕ БОТА             ║${NC}"
     echo -e "${R}  ╚══════════════════════════════════╝${NC}"
     echo -e "${Y}  Это остановит и удалит контейнеры бота.${NC}"
-    read -p "  Type 'yes' to confirm: " CONFIRM
+    read -p "  Введите 'yes' для подтверждения: " CONFIRM
     [ "$CONFIRM" != "yes" ] && echo "  Cancelled" && return
     docker compose -f "$COMPOSE_FILE" down
     read -p "  Delete data (volumes)? (y/n): " -n 1 -r; echo
