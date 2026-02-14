@@ -2508,7 +2508,7 @@ D='\033[0;90m'   # Dim
 A='\033[38;5;214m' # Amber
 NC='\033[0m'
 
-check_dir() { [ ! -d "$INSTALL_DIR" ] && echo -e "${R}  x Bot not found: $INSTALL_DIR${NC}" && exit 1; cd "$INSTALL_DIR"; }
+check_dir() { [ ! -d "$INSTALL_DIR" ] && echo -e "${R}  ✗ Бот не найден: $INSTALL_DIR${NC}" && exit 1; cd "$INSTALL_DIR"; }
 
 do_logs()    { check_dir; echo -e "${C}  Streaming logs (Ctrl+C to stop)...${NC}"; docker compose -f "$COMPOSE_FILE" logs -f --tail=150 bot; }
 do_status()  { check_dir; echo; echo -e "${W}  Container Status${NC}"; echo -e "${D}  --------------------------------------------------${NC}"; docker compose -f "$COMPOSE_FILE" ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null; echo; echo -e "${W}  Resource Usage${NC}"; echo -e "${D}  --------------------------------------------------${NC}"; docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}" 2>/dev/null | grep -E "remnawave|postgres|redis" || echo "  No data"; }
