@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"bedolaga-installer/pkg/ui"
 )
 
 // ════════════════════════════════════════════════════════════════
@@ -29,19 +31,18 @@ func startDocker(cfg *Config) {
 		}
 	}
 
-	runWithSpinner("Сборка и запуск контейнеров...", func() error {
+	ui.RunWithSpinner("Сборка и запуск контейнеров...", func() error {
 		_, err := runShellSilent(fmt.Sprintf("cd %s && docker compose -f %s up -d --build 2>&1", cfg.InstallDir, composeFile))
 		return err
 	})
 
-	printInfo("Ожидание контейнеров...")
+	ui.PrintInfo("Ожидание контейнеров...")
 	time.Sleep(8 * time.Second)
 
-	// Show status
 	out, _ := runShellSilent(fmt.Sprintf("cd %s && docker compose -f %s ps --format 'table {{.Name}}\\t{{.Status}}' 2>/dev/null", cfg.InstallDir, composeFile))
 	if out != "" {
 		fmt.Println()
-		fmt.Println(dimStyle.Render("  " + strings.ReplaceAll(out, "\n", "\n  ")))
+		fmt.Println(ui.DimStyle.Render("  " + strings.ReplaceAll(out, "\n", "\n  ")))
 		fmt.Println()
 	}
 
@@ -69,9 +70,9 @@ func ensureNetworkConnection(cfg *Config) {
 func verifyPanelConnection() {
 	time.Sleep(3 * time.Second)
 	if out, err := runShellSilent("docker exec remnawave_bot getent hosts remnawave 2>/dev/null | awk '{print $1}'"); err == nil && out != "" {
-		printSuccess("Подключение к панели проверено: remnawave -> " + out + ":3000")
+		ui.PrintSuccess("Подключение к панели проверено: remnawave -> " + out + ":3000")
 	} else {
-		printWarning("Не удаётся разрешить 'remnawave' — проверьте сетевое подключение вручную")
+		ui.PrintWarning("Не удаётся разрешить 'remnawave' — проверьте сетевое подключение вручную")
 	}
 }
 
@@ -80,10 +81,10 @@ func verifyPanelConnection() {
 // ════════════════════════════════════════════════════════════════
 
 func setupFirewall() {
-	if !confirmPrompt("Настроить Firewall (UFW)?", false) {
+	if !ui.ConfirmPrompt("Настроить Firewall (UFW)?", false) {
 		return
 	}
-	runWithSpinner("Настройка firewall...", func() error {
+	ui.RunWithSpinner("Настройка firewall...", func() error {
 		if !commandExists("ufw") {
 			runShellSilent("apt-get install -y ufw")
 		}

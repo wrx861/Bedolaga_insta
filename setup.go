@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+
+	"bedolaga-installer/pkg/ui"
 )
 
 // ════════════════════════════════════════════════════════════════
@@ -11,10 +13,10 @@ import (
 // ════════════════════════════════════════════════════════════════
 
 func selectInstallDir(cfg *Config) {
-	idx := selectOption("Каталог установки", []selectItem{
-		{title: "/opt/remnawave-bedolaga-telegram-bot", description: "Рекомендуемое расположение"},
-		{title: "/root/remnawave-bedolaga-telegram-bot", description: "Домашний каталог"},
-		{title: "Свой путь", description: "Указать свой путь"},
+	idx := ui.SelectOption("Каталог установки", []ui.SelectItem{
+		{Title: "/opt/remnawave-bedolaga-telegram-bot", Description: "Рекомендуемое расположение"},
+		{Title: "/root/remnawave-bedolaga-telegram-bot", Description: "Домашний каталог"},
+		{Title: "Свой путь", Description: "Указать свой путь"},
 	})
 	switch idx {
 	case 0:
@@ -22,15 +24,15 @@ func selectInstallDir(cfg *Config) {
 	case 1:
 		cfg.InstallDir = "/root/remnawave-bedolaga-telegram-bot"
 	case 2:
-		cfg.InstallDir = inputText("Путь установки", "/opt/my-bot", "Введите полный путь", true)
+		cfg.InstallDir = ui.InputText("Путь установки", "/opt/my-bot", "Введите полный путь", true)
 	}
-	globalProgress.info("Каталог: " + highlightStyle.Render(cfg.InstallDir))
+	globalProgress.info("Каталог: " + ui.HighlightStyle.Render(cfg.InstallDir))
 }
 
 func checkRemnawavePanel(cfg *Config) {
-	idx := selectOption("Расположение панели", []selectItem{
-		{title: "Панель на этом сервере", description: "Бот подключается через Docker-сеть"},
-		{title: "Панель на другом сервере", description: "Бот подключается через внешний URL"},
+	idx := ui.SelectOption("Расположение панели", []ui.SelectItem{
+		{Title: "Панель на этом сервере", Description: "Бот подключается через Docker-сеть"},
+		{Title: "Панель на другом сервере", Description: "Бот подключается через внешний URL"},
 	})
 	switch idx {
 	case 0:
@@ -43,10 +45,10 @@ func checkRemnawavePanel(cfg *Config) {
 }
 
 func setupLocalPanel(cfg *Config) {
-	idx := selectOption("Каталог панели", []selectItem{
-		{title: "/opt/remnawave", description: "Стандартный путь установки"},
-		{title: "/root/remnawave", description: "Домашний каталог"},
-		{title: "Свой путь", description: "Указать свой путь"},
+	idx := ui.SelectOption("Каталог панели", []ui.SelectItem{
+		{Title: "/opt/remnawave", Description: "Стандартный путь установки"},
+		{Title: "/root/remnawave", Description: "Домашний каталог"},
+		{Title: "Свой путь", Description: "Указать свой путь"},
 	})
 	switch idx {
 	case 0:
@@ -54,7 +56,7 @@ func setupLocalPanel(cfg *Config) {
 	case 1:
 		cfg.PanelDir = "/root/remnawave"
 	case 2:
-		cfg.PanelDir = inputText("Путь к каталогу панели", "/opt/remnawave", "", true)
+		cfg.PanelDir = ui.InputText("Путь к каталогу панели", "/opt/remnawave", "", true)
 	}
 
 	if !dirExists(cfg.PanelDir) {
@@ -73,13 +75,11 @@ func setupLocalPanel(cfg *Config) {
 func detectPanelNetwork(cfg *Config) {
 	found := false
 
-	// Method 1: by running container
 	if out, err := runShellSilent(`docker inspect remnawave --format '{{range $net, $config := .NetworkSettings.Networks}}{{$net}}{{"\n"}}{{end}}' 2>/dev/null | grep -v "^$" | grep -v "host" | grep -v "none" | head -1`); err == nil && out != "" {
 		cfg.DockerNetwork = out
 		found = true
 	}
 
-	// Method 2: known names
 	if !found {
 		known := []string{"remnawave-network", "remnawave_default", "remnawave_network", "remnawave", "remnawave-panel_default"}
 		for _, n := range known {
@@ -91,7 +91,6 @@ func detectPanelNetwork(cfg *Config) {
 		}
 	}
 
-	// Method 3: grep
 	if !found {
 		if out, err := runShellSilent(`docker network ls --format '{{.Name}}' | grep -i "remnawave" | grep -v "bedolaga" | grep -v "bot" | head -1`); err == nil && out != "" {
 			cfg.DockerNetwork = out
@@ -103,7 +102,6 @@ func detectPanelNetwork(cfg *Config) {
 		globalProgress.done("Docker-сеть: " + cfg.DockerNetwork)
 	} else {
 		globalProgress.warn("Docker-сеть не найдена автоматически")
-		// Используем дефолтную сеть
 		cfg.DockerNetwork = "remnawave-network"
 		globalProgress.info("Используется сеть по умолчанию: " + cfg.DockerNetwork)
 	}
@@ -111,22 +109,21 @@ func detectPanelNetwork(cfg *Config) {
 
 func inputDomainSafe(label, hint string) string {
 	for {
-		val := inputText(label, "bot.example.com", hint, false)
+		val := ui.InputText(label, "bot.example.com", hint, false)
 		if val == "" {
 			return ""
 		}
 		val = cleanDomain(val)
 		if !validateDomain(val) {
-			printError("Неверный формат домена: " + val)
-			printDim("Ожидаемый формат: bot.example.com")
-			if !isInteractive() {
-				// В неинтерактивном режиме пропускаем
+			ui.PrintError("Неверный формат домена: " + val)
+			ui.PrintDim("Ожидаемый формат: bot.example.com")
+			if !ui.IsInteractive() {
 				return ""
 			}
-			idx := selectOption("Что делать?", []selectItem{
-				{title: "Попробовать снова", description: "Ввести другой домен"},
-				{title: "Использовать всё равно", description: "Продолжить с этим значением"},
-				{title: "Пропустить", description: "Не настраивать этот домен"},
+			idx := ui.SelectOption("Что делать?", []ui.SelectItem{
+				{Title: "Попробовать снова", Description: "Ввести другой домен"},
+				{Title: "Использовать всё равно", Description: "Продолжить с этим значением"},
+				{Title: "Пропустить", Description: "Не настраивать этот домен"},
 			})
 			switch idx {
 			case 0:
@@ -137,17 +134,16 @@ func inputDomainSafe(label, hint string) string {
 				return ""
 			}
 		}
-		printInfo("Проверка DNS...")
+		ui.PrintInfo("Проверка DNS...")
 		if !checkDomainDNS(val) {
-			printWarning("DNS не указывает на этот сервер")
-			if !isInteractive() {
-				// В неинтерактивном режиме продолжаем с этим доменом
+			ui.PrintWarning("DNS не указывает на этот сервер")
+			if !ui.IsInteractive() {
 				return val
 			}
-			idx := selectOption("Что делать?", []selectItem{
-				{title: "Попробовать другой домен", description: "Ввести другой домен"},
-				{title: "Продолжить с этим доменом", description: "DNS можно настроить позже"},
-				{title: "Пропустить", description: "Не настраивать этот домен"},
+			idx := ui.SelectOption("Что делать?", []ui.SelectItem{
+				{Title: "Попробовать другой домен", Description: "Ввести другой домен"},
+				{Title: "Продолжить с этим доменом", Description: "DNS можно настроить позже"},
+				{Title: "Пропустить", Description: "Не настраивать этот домен"},
 			})
 			switch idx {
 			case 0:
@@ -188,87 +184,74 @@ func checkPostgresVolume(cfg *Config) {
 }
 
 func interactiveSetup(cfg *Config) {
-	printBox("⚙️  Интерактивная настройка",
+	ui.PrintBox("⚙️  Интерактивная настройка",
 		"Введите необходимые данные для настройки бота.\n"+
-			dimStyle.Render("Необязательные поля можно пропустить клавишей Esc."))
+			ui.DimStyle.Render("Необязательные поля можно пропустить клавишей Esc."))
 
-	// 1. BOT_TOKEN
-	cfg.BotToken = inputText("BOT_TOKEN", "123456:ABC-DEF...", "Получить у @BotFather в Telegram", true)
+	cfg.BotToken = ui.InputText("BOT_TOKEN", "123456:ABC-DEF...", "Получить у @BotFather в Telegram", true)
+	cfg.AdminIDs = ui.InputText("ADMIN_IDS", "123456789", "Ваш Telegram ID (несколько: 123,456). Узнать у @userinfobot", true)
 
-	// 2. ADMIN_IDS
-	cfg.AdminIDs = inputText("ADMIN_IDS", "123456789", "Ваш Telegram ID (несколько: 123,456). Узнать у @userinfobot", true)
-
-	// 3. REMNAWAVE_API_URL
 	if cfg.PanelInstalledLocally && cfg.DockerNetwork != "" {
-		printInfo("Локальная панель — используется внутренний Docker-адрес")
-		val := inputText("REMNAWAVE_API_URL", "http://remnawave:3000", "Внутренний адрес для локальной панели", false)
+		ui.PrintInfo("Локальная панель — используется внутренний Docker-адрес")
+		val := ui.InputText("REMNAWAVE_API_URL", "http://remnawave:3000", "Внутренний адрес для локальной панели", false)
 		if val == "" {
 			val = "http://remnawave:3000"
 		}
 		cfg.RemnawaveAPIURL = val
 	} else {
-		cfg.RemnawaveAPIURL = inputText("REMNAWAVE_API_URL", "https://panel.yourdomain.com", "Внешний URL панели Remnawave", true)
+		cfg.RemnawaveAPIURL = ui.InputText("REMNAWAVE_API_URL", "https://panel.yourdomain.com", "Внешний URL панели Remnawave", true)
 	}
 
-	// 4. REMNAWAVE_API_KEY
-	cfg.RemnawaveAPIKey = inputText("REMNAWAVE_API_KEY", "", "Получить в настройках панели Remnawave", true)
+	cfg.RemnawaveAPIKey = ui.InputText("REMNAWAVE_API_KEY", "", "Получить в настройках панели Remnawave", true)
 
-	// 5. Auth type
-	idx := selectOption("Тип авторизации", []selectItem{
-		{title: "API Key", description: "По умолчанию — только API-ключ"},
-		{title: "Basic Auth", description: "Авторизация по логину и паролю"},
+	idx := ui.SelectOption("Тип авторизации", []ui.SelectItem{
+		{Title: "API Key", Description: "По умолчанию — только API-ключ"},
+		{Title: "Basic Auth", Description: "Авторизация по логину и паролю"},
 	})
 	cfg.RemnawaveAuthType = "api_key"
 	if idx == 1 {
 		cfg.RemnawaveAuthType = "basic_auth"
-		cfg.RemnawaveUsername = inputText("REMNAWAVE_USERNAME", "", "", false)
-		cfg.RemnawavePassword = inputText("REMNAWAVE_PASSWORD", "", "", false)
+		cfg.RemnawaveUsername = ui.InputText("REMNAWAVE_USERNAME", "", "", false)
+		cfg.RemnawavePassword = ui.InputText("REMNAWAVE_PASSWORD", "", "", false)
 	}
 
-	// 6. Webhook domain
 	cfg.WebhookDomain = inputDomainSafe("Домен вебхука (необязательно)", "Для режима webhook. Оставьте пустым для polling.")
-
-	// 8. Miniapp domain
 	cfg.MiniappDomain = inputDomainSafe("Домен Mini App (необязательно)", "Домен для Telegram Mini App")
+	cfg.AdminNotificationsChatID = ui.InputText("Chat ID уведомлений (необязательно)", "-1001234567890", "ID чата/группы Telegram для уведомлений администратора", false)
 
-	// 9. Notifications
-	cfg.AdminNotificationsChatID = inputText("Chat ID уведомлений (необязательно)", "-1001234567890", "ID чата/группы Telegram для уведомлений администратора", false)
-
-	// 10. PostgreSQL password
 	if cfg.KeepExistingVolumes && cfg.OldPostgresPassword != "" {
 		cfg.PostgresPassword = cfg.OldPostgresPassword
-		printSuccess("PostgreSQL: используется сохранённый пароль")
+		ui.PrintSuccess("PostgreSQL: используется сохранённый пароль")
 	} else {
-		pw := inputText("Пароль PostgreSQL (необязательно)", "", "Оставьте пустым для автогенерации безопасного пароля", false)
+		pw := ui.InputText("Пароль PostgreSQL (необязательно)", "", "Оставьте пустым для автогенерации безопасного пароля", false)
 		if pw == "" {
 			cfg.PostgresPassword = generateSafePassword(24)
-			printSuccess("Сгенерирован безопасный пароль PostgreSQL")
+			ui.PrintSuccess("Сгенерирован безопасный пароль PostgreSQL")
 		} else {
 			cfg.PostgresPassword = pw
 		}
 	}
 
-	// 11. Reverse proxy
 	if cfg.WebhookDomain != "" || cfg.MiniappDomain != "" {
-		proxyItems := []selectItem{
-			{title: "Nginx (системный)", description: "Автономный nginx на сервере"},
-			{title: "Caddy", description: "Автоматический HTTPS, простая настройка"},
-			{title: "Пропустить", description: "Настроить вручную позже"},
+		proxyItems := []ui.SelectItem{
+			{Title: "Nginx (системный)", Description: "Автономный nginx на сервере"},
+			{Title: "Caddy", Description: "Автоматический HTTPS, простая настройка"},
+			{Title: "Пропустить", Description: "Настроить вручную позже"},
 		}
 		if cfg.PanelInstalledLocally {
 			nginxNet, _ := runShellSilent("docker inspect remnawave-nginx --format '{{.HostConfig.NetworkMode}}' 2>/dev/null")
 			if strings.TrimSpace(nginxNet) == "host" {
-				proxyItems = []selectItem{
-					{title: "Nginx (панели)", description: "Добавить в nginx панели (host mode)"},
-					{title: "Nginx (системный)", description: "Автономный nginx на сервере"},
-					{title: "Caddy", description: "Автоматический HTTPS, простая настройка"},
-					{title: "Пропустить", description: "Настроить вручную позже"},
+				proxyItems = []ui.SelectItem{
+					{Title: "Nginx (панели)", Description: "Добавить в nginx панели (host mode)"},
+					{Title: "Nginx (системный)", Description: "Автономный nginx на сервере"},
+					{Title: "Caddy", Description: "Автоматический HTTPS, простая настройка"},
+					{Title: "Пропустить", Description: "Настроить вручную позже"},
 				}
 			}
 		}
 
-		idx := selectOption("Обратный прокси", proxyItems)
-		title := proxyItems[idx].title
+		idx := ui.SelectOption("Обратный прокси", proxyItems)
+		title := proxyItems[idx].Title
 		switch {
 		case strings.Contains(title, "панели"):
 			cfg.ReverseProxyType = "nginx_panel"
@@ -283,7 +266,6 @@ func interactiveSetup(cfg *Config) {
 		cfg.ReverseProxyType = "skip"
 	}
 
-	// Generate tokens
 	cfg.WebhookSecretToken = generateToken()
 	cfg.WebAPIDefaultToken = generateToken()
 	cfg.SupportUsername = "@support"
@@ -298,5 +280,5 @@ func interactiveSetup(cfg *Config) {
 		cfg.WebAPIEnabled = "false"
 	}
 
-	printSuccessBox(successStyle.Render("Настройка завершена!"))
+	ui.PrintSuccessBox(ui.SuccessStyle.Render("Настройка завершена!"))
 }

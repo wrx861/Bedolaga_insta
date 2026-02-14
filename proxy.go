@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
+
+	"bedolaga-installer/pkg/ui"
 )
 
 // ════════════════════════════════════════════════════════════════
@@ -89,13 +92,13 @@ func setupNginxSystem(cfg *Config) {
 	}
 
 	runShellSilent("nginx -t && systemctl reload nginx")
-	printSuccess("Nginx настроен")
+	ui.PrintSuccess("Nginx настроен")
 }
 
 func setupNginxPanel(cfg *Config) {
 	panelNginxConf := filepath.Join(cfg.PanelDir, "nginx.conf")
 	if !fileExists(panelNginxConf) {
-		printWarning("nginx.conf панели не найден, переключаемся на системный nginx")
+		ui.PrintWarning("nginx.conf панели не найден, переключаемся на системный nginx")
 		setupNginxSystem(cfg)
 		return
 	}
@@ -170,7 +173,7 @@ func setupNginxPanel(cfg *Config) {
 	}
 
 	runShellSilent(fmt.Sprintf("cd %s && docker compose up -d remnawave-nginx 2>/dev/null || docker restart remnawave-nginx 2>/dev/null || true", cfg.PanelDir))
-	printSuccess("Nginx панели обновлён")
+	ui.PrintSuccess("Nginx панели обновлён")
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -218,7 +221,7 @@ func setupCaddy(cfg *Config) {
 
 	runShellSilent("systemctl enable caddy 2>/dev/null || true")
 	runShellSilent("systemctl reload caddy 2>/dev/null || systemctl restart caddy 2>/dev/null || true")
-	printSuccess("Caddy настроен (автоматический HTTPS)")
+	ui.PrintSuccess("Caddy настроен (автоматический HTTPS)")
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -233,12 +236,12 @@ func setupSSL(cfg *Config) {
 		return
 	}
 
-	if !confirmPrompt("Получить SSL-сертификаты сейчас?", true) {
-		printInfo("Вы можете получить сертификаты позже: certbot --nginx -d yourdomain.com")
+	if !ui.ConfirmPrompt("Получить SSL-сертификаты сейчас?", true) {
+		ui.PrintInfo("Вы можете получить сертификаты позже: certbot --nginx -d yourdomain.com")
 		return
 	}
 
-	cfg.SSLEmail = inputText("Email Let's Encrypt", "admin@example.com", "Email для уведомлений о SSL-сертификатах", true)
+	cfg.SSLEmail = ui.InputText("Email Let's Encrypt", "admin@example.com", "Email для уведомлений о SSL-сертификатах", true)
 
 	isPanelMode := cfg.ReverseProxyType == "nginx_panel"
 
@@ -246,7 +249,7 @@ func setupSSL(cfg *Config) {
 		if domain == "" {
 			continue
 		}
-		runWithSpinner("Получение SSL для "+domain+"...", func() error {
+		ui.RunWithSpinner("Получение SSL для "+domain+"...", func() error {
 			if isPanelMode {
 				runShellSilent("docker stop remnawave-nginx 2>/dev/null || true")
 				runShellSilent("systemctl stop nginx 2>/dev/null || true")

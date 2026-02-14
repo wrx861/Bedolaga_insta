@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"bedolaga-installer/pkg/ui"
 )
 
 // ════════════════════════════════════════════════════════════════
@@ -11,7 +13,7 @@ import (
 
 func checkRoot() {
 	if os.Getuid() != 0 {
-		printErrorBox(errorStyle.Render("Этот скрипт должен быть запущен от root!"))
+		ui.PrintErrorBox(ui.ErrorStyle.Render("Этот скрипт должен быть запущен от root!"))
 		os.Exit(1)
 	}
 }
@@ -28,7 +30,7 @@ func detectOS() string {
 	default:
 		if out != "" {
 			globalProgress.warn("Оптимизировано для Ubuntu/Debian. Обнаружено: " + out)
-			if !confirmPrompt("Продолжить на неподдерживаемой ОС?", false) {
+			if !ui.ConfirmPrompt("Продолжить на неподдерживаемой ОС?", false) {
 				os.Exit(0)
 			}
 		}
@@ -45,7 +47,6 @@ func updateSystem() {
 }
 
 func installBasePackages() {
-	// Устанавливаем по частям для надёжности
 	packages := []string{
 		"curl wget git",
 		"nano htop",
@@ -55,7 +56,6 @@ func installBasePackages() {
 	for _, pkg := range packages {
 		runShellSilent(fmt.Sprintf("DEBIAN_FRONTEND=noninteractive apt-get install -y -qq %s 2>/dev/null || true", pkg))
 	}
-	// certbot опционален - может не быть в некоторых системах
 	runShellSilent("DEBIAN_FRONTEND=noninteractive apt-get install -y -qq certbot python3-certbot-nginx 2>/dev/null || true")
 }
 
@@ -64,12 +64,10 @@ func installDocker() {
 		ver, _ := runShellSilent("docker --version")
 		globalProgress.done("Docker: " + ver)
 	} else {
-		// Установка Docker без спиннера
 		runShellSilent("DEBIAN_FRONTEND=noninteractive curl -fsSL https://get.docker.com | sh")
 		runShellSilent("systemctl enable docker 2>/dev/null || true")
 		runShellSilent("systemctl start docker 2>/dev/null || true")
 
-		// Проверяем, что Docker реально установился
 		if !commandExists("docker") {
 			globalProgress.fail("Не удалось установить Docker!")
 			globalProgress.info("Попробуйте установить Docker вручную: curl -fsSL https://get.docker.com | sh")
@@ -79,7 +77,6 @@ func installDocker() {
 		globalProgress.done("Docker установлен: " + ver)
 	}
 
-	// Проверяем Docker Compose
 	if out, err := runShellSilent("docker compose version 2>/dev/null"); err == nil && out != "" {
 		globalProgress.done("Docker Compose: " + out)
 	} else if out, err := runShellSilent("docker-compose --version 2>/dev/null"); err == nil && out != "" {
@@ -95,7 +92,7 @@ func installNginx() {
 	if commandExists("nginx") {
 		return
 	}
-	runWithSpinner("Установка Nginx...", func() error {
+	ui.RunWithSpinner("Установка Nginx...", func() error {
 		runShellSilent("DEBIAN_FRONTEND=noninteractive apt-get install -y -qq nginx")
 		runShellSilent("systemctl enable nginx")
 		runShellSilent("systemctl start nginx")
@@ -107,7 +104,7 @@ func installCaddy() {
 	if commandExists("caddy") {
 		return
 	}
-	runWithSpinner("Установка Caddy...", func() error {
+	ui.RunWithSpinner("Установка Caddy...", func() error {
 		runShellSilent("DEBIAN_FRONTEND=noninteractive apt-get install -y -qq debian-keyring debian-archive-keyring apt-transport-https curl")
 		runShellSilent("curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg 2>/dev/null || true")
 		runShellSilent("curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list > /dev/null")
