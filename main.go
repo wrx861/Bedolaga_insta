@@ -200,13 +200,50 @@ func (p *installProgress) advance(stepName string) {
 	stepLabel := lipgloss.NewStyle().Foreground(colorWhite).Bold(true).Render(stepName)
 	counter := dimStyle.Render(fmt.Sprintf("[%2d/%d]", p.current, p.total))
 
+	p.lastLine = fmt.Sprintf("  %s %s%s %s  %s %s", counter, bar, empty, pctStr, accentBar.Render("▸"), stepLabel)
+	
 	// Очищаем строку и печатаем прогресс на той же позиции (ANSI escape: \033[K)
-	fmt.Printf("\r\033[K  %s %s%s %s  %s %s", counter, bar, empty, pctStr, accentBar.Render("▸"), stepLabel)
+	fmt.Printf("\r\033[K%s", p.lastLine)
 	
 	// Переход на новую строку только в конце
 	if p.current == p.total {
 		fmt.Println()
 	}
+}
+
+// Показать сообщение над прогресс-баром
+func (p *installProgress) log(msg string) {
+	if p.silent {
+		return
+	}
+	// Очистить текущую строку, напечатать сообщение, затем прогресс снова
+	fmt.Printf("\r\033[K%s\n", msg)
+	if p.lastLine != "" {
+		fmt.Printf("%s", p.lastLine)
+	}
+}
+
+// Показать финальный статус этапа (всегда показывается)
+func (p *installProgress) done(msg string) {
+	fmt.Printf("\r\033[K%s\n", successStyle.Render("  ✓ "+msg))
+	if p.lastLine != "" && p.current < p.total {
+		fmt.Printf("%s", p.lastLine)
+	}
+}
+
+// Показать ошибку (всегда показывается)
+func (p *installProgress) fail(msg string) {
+	fmt.Printf("\r\033[K%s\n", errorStyle.Render("  ✗ "+msg))
+}
+
+// Показать предупреждение (всегда показывается)
+func (p *installProgress) warn(msg string) {
+	fmt.Printf("\r\033[K%s\n", warnStyle.Render("  ⚠ "+msg))
+}
+
+// Показать инфо (всегда показывается)  
+func (p *installProgress) info(msg string) {
+	fmt.Printf("\r\033[K%s\n", infoStyle.Render("  ℹ "+msg))
 }
 
 // ════════════════════════════════════════════════════════════════
