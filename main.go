@@ -1330,9 +1330,11 @@ func cloneRepository(cfg *Config) {
 func createDirectories(cfg *Config) {
 	dirs := []string{"logs", "data", "data/backups", "data/referral_qr", "locales"}
 	for _, d := range dirs {
-		os.MkdirAll(filepath.Join(cfg.InstallDir, d), 0755)
+		os.MkdirAll(filepath.Join(cfg.InstallDir, d), 0777)
 	}
-	runShellSilent(fmt.Sprintf("chmod -R 755 %s/logs %s/data %s/locales 2>/dev/null || true", cfg.InstallDir, cfg.InstallDir, cfg.InstallDir))
+	// Даём полные права чтобы Docker контейнер мог писать
+	runShellSilent(fmt.Sprintf("chmod -R 777 %s/logs %s/data 2>/dev/null || true", cfg.InstallDir, cfg.InstallDir))
+	runShellSilent(fmt.Sprintf("chmod -R 755 %s/locales 2>/dev/null || true", cfg.InstallDir))
 }
 
 // ════════════════════════════════════════════════════════════════
