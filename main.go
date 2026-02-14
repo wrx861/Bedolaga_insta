@@ -2518,11 +2518,11 @@ do_stop()    { check_dir; echo -e "${C}  Остановка...${NC}"; docker com
 
 do_update() {
     check_dir
-    echo -e "${A}  Updating bot...${NC}"
+    echo -e "${A}  Обновление бота...${NC}"
     cp .env ".env.backup_$(date +%%Y%%m%%d_%%H%%M%%S)" 2>/dev/null
-    echo -e "${C}  Pulling latest code...${NC}"
+    echo -e "${C}  Загрузка обновлений...${NC}"
     git pull origin main
-    echo -e "${C}  Rebuilding containers...${NC}"
+    echo -e "${C}  Пересборка контейнеров...${NC}"
     docker compose -f "$COMPOSE_FILE" down && docker compose -f "$COMPOSE_FILE" up -d --build && docker compose -f "$COMPOSE_FILE" logs -f -t
 }
 
