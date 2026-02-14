@@ -2568,7 +2568,7 @@ do_uninstall() {
     [[ $REPLY =~ ^[Yy]$ ]] && docker compose -f "$COMPOSE_FILE" down -v
     [ -f "/usr/local/bin/bot" ] && rm -f /usr/local/bin/bot && echo -e "${G}  ✓ Команда 'bot' удалена${NC}"
     echo -e "${G}  ✓ Удаление завершено${NC}"
-    echo -e "${Y}  Directory preserved: $INSTALL_DIR${NC}"
+    echo -e "${Y}  Каталог сохранён: $INSTALL_DIR${NC}"
 }
 
 show_menu() {
