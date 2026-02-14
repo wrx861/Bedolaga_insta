@@ -1148,34 +1148,17 @@ func checkPostgresVolume(cfg *Config) {
 
 	foundVolumes, _ := runShellSilent(`docker volume ls -q 2>/dev/null | grep -E "(postgres|bot)" | grep -v "remnawave_postgres" || true`)
 	if strings.TrimSpace(foundVolumes) == "" {
-		printInfo("Существующих томов PostgreSQL нет — чистая установка")
+		globalProgress.info("Чистая установка — существующих томов нет")
 		return
 	}
 
-	printWarning("Найдены существующие Docker-тома:")
-	for _, v := range strings.Split(foundVolumes, "\n") {
-		v = strings.TrimSpace(v)
-		if v != "" {
-			printDim("• " + v)
-		}
-	}
-
+	globalProgress.warn("Найдены существующие Docker-тома")
 	if cfg.OldPostgresPassword != "" {
-		printSuccess("Найден старый пароль PostgreSQL в .env")
-		idx := selectOption("Существующие данные", []selectItem{
-			{title: "Сохранить данные", description: "Сохранить базу, восстановить пароль (рекомендуется)"},
-			{title: "Чистая установка", description: "Удалить тома, начать с нуля"},
-		})
-		if idx == 0 {
-			cfg.KeepExistingVolumes = true
-		} else {
-			runShellSilent(fmt.Sprintf("cd %s 2>/dev/null && docker compose down -v 2>/dev/null || true", cfg.InstallDir))
-		}
+		globalProgress.done("Найден старый пароль PostgreSQL")
+		cfg.KeepExistingVolumes = true
 	} else {
-		printWarning("Пароль PostgreSQL не найден — требуется чистая установка")
-		if confirmPrompt("Удалить тома и начать с нуля?", true) {
-			runShellSilent(fmt.Sprintf("cd %s 2>/dev/null && docker compose down -v 2>/dev/null || true", cfg.InstallDir))
-		}
+		// Чистая установка если нет старого пароля
+		runShellSilent(fmt.Sprintf("cd %s 2>/dev/null && docker compose down -v 2>/dev/null || true", cfg.InstallDir))
 	}
 }
 
