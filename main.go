@@ -11,7 +11,7 @@ import (
 // VERSION & CONSTANTS
 // ════════════════════════════════════════════════════════════════
 
-var appVersion = "2.1.0"
+var appVersion = "2.2.0"
 
 const repoURL = "https://github.com/BEDOLAGA-DEV/remnawave-bedolaga-telegram-bot.git"
 
@@ -33,6 +33,8 @@ func main() {
 	switch os.Args[1] {
 	case "install":
 		installWizard()
+	case "manage":
+		manageBot()
 	case "update", "upgrade":
 		updateBot()
 	case "uninstall", "remove":
@@ -43,6 +45,7 @@ func main() {
 		printBanner()
 		fmt.Println(highlightStyle.Render("  Команды:"))
 		fmt.Println(dimStyle.Render("    install    ") + "Запустить мастер установки")
+		fmt.Println(dimStyle.Render("    manage     ") + "Панель управления ботом (TUI)")
 		fmt.Println(dimStyle.Render("    update     ") + "Обновить бота (git pull + пересборка)")
 		fmt.Println(dimStyle.Render("    uninstall  ") + "Удалить бота")
 		fmt.Println(dimStyle.Render("    version    ") + "Показать версию")
