@@ -2630,7 +2630,7 @@ case "$1" in
     logs) do_logs ;; status) do_status ;; restart) do_restart ;; start) do_start ;; stop) do_stop ;;
     update|upgrade) do_update ;; backup) do_backup ;; health|check) do_health ;; config|edit) do_config ;;
     uninstall|remove) do_uninstall ;; help|--help|-h) show_help ;; "") interactive_menu ;;
-    *) echo -e "${R}  Unknown: $1${NC}"; echo "  Use: bot help"; exit 1 ;;
+    *) echo -e "${R}  Неизвестная команда: $1${NC}"; echo "  Используйте: bot help"; exit 1 ;;
 esac
 `, cfg.InstallDir, composeFile)
 
