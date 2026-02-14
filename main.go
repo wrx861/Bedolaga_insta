@@ -574,9 +574,21 @@ func (m confirmModel) View() string {
 }
 
 func confirmPrompt(prompt string, defaultYes bool) bool {
+	if !isInteractive() {
+		// В неинтерактивном режиме используем значение по умолчанию
+		if defaultYes {
+			fmt.Println(successStyle.Render("  ✓ Да (по умолчанию)"))
+		} else {
+			fmt.Println(dimStyle.Render("  - Нет (по умолчанию)"))
+		}
+		return defaultYes
+	}
 	m := confirmModel{prompt: prompt, selected: defaultYes}
 	p := tea.NewProgram(m)
-	result, _ := p.Run()
+	result, err := p.Run()
+	if err != nil {
+		return defaultYes
+	}
 	final := result.(confirmModel)
 	if final.selected {
 		fmt.Println(successStyle.Render("  ✓ Да"))
